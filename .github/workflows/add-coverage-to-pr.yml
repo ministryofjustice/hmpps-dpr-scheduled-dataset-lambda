@@ -29,10 +29,10 @@ jobs:
         id: calculate-test-coverage
         run: |
           ./gradlew jacocoTestReport | tee logs.txt
-          grep 'Test Coverage:' logs.txt -A6 > message.txt
+#          grep 'Test Coverage:' logs.txt -A6 > message.txt
 
-      - name: PR comment
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          comment_tag: coverage
-          filePath: message.txt
+#      - name: PR comment
+#        uses: thollander/actions-comment-pull-request@v2
+#        with:
+#          comment_tag: coverage
+#          filePath: message.txt
