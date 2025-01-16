@@ -12,7 +12,7 @@ workflows:
           context:
             - hmpps-reporting-common
             - hmpps-reporting-orb
-          cache_key: "dpr-scheduled-lambda-build-cache-v1"
+          cache_key: "dpr-scheduled-lambda-build-cache-v2"
       - reporting/gradle_build_publish:
           tag: "21.0"
           app: hmpps-dpr-scheduled-dataset-lambda
@@ -34,7 +34,7 @@ workflows:
           context:
             - hmpps-reporting-common
             - hmpps-reporting-orb
-          cache_key: "dpr-scheduled-lambda-build-cache-v1"
+          cache_key: "dpr-scheduled-lambda-build-cache-v2"
 
   owasp-security:
     triggers:
