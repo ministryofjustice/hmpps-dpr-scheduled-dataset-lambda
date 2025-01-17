@@ -3,6 +3,7 @@ plugins {
   id("jacoco")
   id("com.github.johnrengelman.shadow") version "7.1.1" // originally 7.1.2 but downgraded since circle CI build was failing
   id("org.barfuin.gradle.jacocolog") version "3.1.0"
+  id("org.owasp.dependencycheck")  version "8.2.1"
 }
 
 configurations {
