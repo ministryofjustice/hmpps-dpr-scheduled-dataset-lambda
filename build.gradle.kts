@@ -79,7 +79,7 @@ fun isNonStable(version: String): Boolean {
 tasks {
   withType<Test> {
     useJUnitPlatform()
-  },
+  }
   withType<ShadowJar> {
     // <WORKAROUND for="https://github.com/johnrengelman/shadow/issues/448">
     configurations = listOf(
