@@ -6,7 +6,6 @@ import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementReques
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementResponse
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
-import uk.gov.justice.digital.hmpps.scheduled.service.DatasetGenerateServiceAthena.Companion.DATASET_
 import java.util.*
 
 data class StatementExecutionResponse(
@@ -25,6 +24,10 @@ class DatasetGenerateService (
   private val redshiftDataClient: RedshiftDataClient,
   private val redshiftProperties: RedshiftProperties,
 ) {
+
+  companion object {
+    const val DATASET_ = """dataset_"""
+  }
 
   fun generateDataset(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
     //will need to look at using report id / dataset id so that this can be referenced dynamically
