@@ -22,7 +22,7 @@ ext {
 }
 */
 dependencies {
-  implementation("com.amazonaws:aws-java-sdk-s3:1.12.590")
+  implementation("com.amazonaws:aws-java-sdk-s3:1.12.780")
   implementation("com.amazonaws:aws-java-sdk-dynamodb:1.12.590")
   implementation("com.amazonaws:aws-lambda-java-core:1.2.3")
   implementation("com.amazonaws:aws-lambda-java-events:3.11.3")
