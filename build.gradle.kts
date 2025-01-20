@@ -1,7 +1,7 @@
 plugins {
   kotlin("jvm") version "2.0.21"
   id("jacoco")
-  id("com.github.johnrengelman.shadow") version "7.1.1"
+  id("com.github.johnrengelman.shadow") version "8.1.1"
   id("org.barfuin.gradle.jacocolog") version "3.1.0"
   id("org.owasp.dependencycheck")  version "8.2.1"
 }
