@@ -17,10 +17,6 @@ dependencies {
   implementation("com.amazonaws:aws-lambda-java-events:3.11.3")
   implementation("org.quartz-scheduler:quartz:2.5.0")
 
-  //implementation("software.amazon.awssdk:lambda:2.29.52")
-  //implementation("software.amazon.awssdk:aws-core:2.29.52")
-  //software.amazon.awssdk:lambda:2.29.52
-  //software.amazon.awssdk:aws-core:2.29.52
   implementation("com.google.code.gson:gson:2.11.0")
   implementation("com.google.guava:guava:33.3.1-jre")
 

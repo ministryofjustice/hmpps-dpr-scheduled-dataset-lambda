@@ -55,5 +55,4 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
 
     return@runBlocking ""
   }
-
 }

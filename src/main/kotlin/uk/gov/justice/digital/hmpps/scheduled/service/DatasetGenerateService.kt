@@ -39,14 +39,11 @@ class DatasetGenerateService (
       buildFinalQuery(
         datasetQuery = buildDatasetQuery(datasetWithReport.dataset.query),
       )
-    }
+          }
           );
-        
     """.trimIndent()
 
     logger.log("attempting to execute final query " + finalQuery)
-
-
 
     return executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
   }
