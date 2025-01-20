@@ -1,7 +1,7 @@
 plugins {
   kotlin("jvm") version "2.0.21"
   id("jacoco")
-  id("com.github.johnrengelman.shadow") version "7.1.1" // originally 7.1.2 but downgraded since circle CI build was failing
+  id("com.github.johnrengelman.shadow") version "8.1.1"
   id("org.barfuin.gradle.jacocolog") version "3.1.0"
   id("org.owasp.dependencycheck")  version "8.2.1"
 }
@@ -22,7 +22,6 @@ ext {
 }
 */
 dependencies {
-  /* */
   implementation("com.amazonaws:aws-java-sdk-s3:1.12.590")
   implementation("com.amazonaws:aws-java-sdk-dynamodb:1.12.590")
   implementation("com.amazonaws:aws-lambda-java-core:1.2.3")
@@ -74,6 +73,10 @@ tasks.jar {
   enabled = true
 }
 
+tasks.assemble {
+  dependsOn(tasks.shadowJar)
+}
+
 repositories {
   mavenLocal()
   mavenCentral()
@@ -91,11 +94,6 @@ fun isNonStable(version: String): Boolean {
   return isStable.not()
 }
 
-/*
-shadowJar {
-  zip64 true
-}
-*/
 tasks {
   withType<Test> {
     useJUnitPlatform()
@@ -110,10 +108,5 @@ project.getTasksByName("check", false).forEach {
     ""
   }
   it.dependsOn("$prefix:ktlintCheck")
-}
- */
-/*
-assemble {
-  dependsOn shadowJar
 }
  */
