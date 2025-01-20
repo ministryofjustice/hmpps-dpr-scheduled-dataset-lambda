@@ -14,27 +14,59 @@ import java.util.*
 
 class ReportScheduleService(
   private val dynamoDBRepository: DynamoDBRepository,
+  private val datasetGenerateService: DatasetGenerateService,
   private val clock: Clock = Clock.systemDefaultZone(),
 ) {
   companion object {
     const val SCHEMA_REF_PREFIX = "\$ref:"
   }
-  suspend fun findReports(logger: LambdaLogger) {
+
+  suspend fun processProductDefinitions(logger: LambdaLogger) {
+    //FIND
+    val productDefinitions = dynamoDBRepository.findReportsWithSchedule()
+    logger.log("found product definitions " + productDefinitions.size)
+
+    if (productDefinitions.isNotEmpty()) {
+
+      //SCHEDULE
+      val scheduledDataSet = extractDatasetsToBeScheduled(productDefinitions)
+      logger.log("following datasets due to be scheduled " + scheduledDataSet)
+
+      //GENERATE data sets
+      scheduledDataSet.map{ scheduled ->
+        val response = datasetGenerateService.generateDataset(scheduled, logger)
+        logger.log("report ${scheduled.report.name},  dataset ${scheduled.dataset.id}, got statement response " + response)
+      }
+    }
+  }
+
+  suspend fun testRun(logger: LambdaLogger) {
 
     //FIND
-    val reports = dynamoDBRepository.findReportsByFileName("visit")
-    logger.log("found reports " + reports.size)
+    val productDefinitions = dynamoDBRepository.findReportsByFileName("court")
+    logger.log("found definitions " + productDefinitions.size)
 
-    if (reports.isNotEmpty()) {
-      logger.log(reports.first().toString())
+    if (productDefinitions.isNotEmpty()) {
+      productDefinitions.map{ productDefinition ->
+        logger.log("found definitions id " + productDefinition.id + ", report name= " +productDefinition.name + ", datasource=" + productDefinition.datasource )
+      }
+
+      //test PROCESS first one
+      val productDefinition = productDefinitions.first()
+
+      val flattenDataSet = flattenDataset(productDefinition, productDefinition.dataset).first()
+      logger.log("atttempting to generate dataset for " + flattenDataSet)
+      val response = datasetGenerateService.generateDataset(flattenDataSet, logger)
+      logger.log("got statement response " + response)
     }
 
     //SCHEDULE
-    val scheduled = extractDatasetsToBeScheduled(reports)
+    val scheduled = extractDatasetsToBeScheduled(productDefinitions)
     logger.log("following datasets due to be scheduled " + scheduled)
+  }
 
-    //PROCESS
-
+  fun extractDatasetsToBeScheduled(productDefs: List<ProductDefinition>) :List<DatasetWithReport> {
+    return productDefs.map{filterDatasetToBeScheduled(it)}.flatMap { it }
   }
 
   fun flattenDataset(productDefinition: ProductDefinition, datasets: List<Dataset>): List<DatasetWithReport> {
@@ -43,17 +75,14 @@ class ReportScheduleService(
       Pair(report.dataset.removePrefix(SCHEMA_REF_PREFIX), report)
     }.toMap()
 
-    return datasets.filter{entity -> entity.hasSchedule() && shouldBeScheduled(entity.schedule!!)}.map{ dataset ->
+    return datasets.map{ dataset ->
       DatasetWithReport(
         dataset = dataset,
         report = reportToDataSet.get(dataset.id),
-        productDefinitionId = productDefinition.id
+        productDefinitionId = productDefinition.id,
+        datasource = productDefinition.datasource.first(),
       )
     }
-  }
-
-  fun extractDatasetsToBeScheduled(productDefs: List<ProductDefinition>) :List<DatasetWithReport> {
-    return productDefs.map{filterDatasetToBeScheduled(it)}.flatMap { it }
   }
 
   fun filterDatasetToBeScheduled(productDefinition: ProductDefinition) :List<DatasetWithReport> {

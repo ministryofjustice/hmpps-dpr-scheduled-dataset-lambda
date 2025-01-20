@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
-import uk.gov.justice.digital.hmpps.scheduled.model.Dataset
-import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
-import uk.gov.justice.digital.hmpps.scheduled.model.ProductDefinition
-import uk.gov.justice.digital.hmpps.scheduled.model.Report
+import uk.gov.justice.digital.hmpps.scheduled.model.*
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -16,11 +13,13 @@ import java.time.ZoneOffset
 class ReportScheduleServiceTest {
 
   val dynamoDBRepository = mock<DynamoDBRepository>()
+  val datasetGenerateService = mock<DatasetGenerateService>()
 
   val asOfDate = LocalDateTime.of(2024,12,9, 10,0,0)
 
   val reportScheduleService = ReportScheduleService(
     dynamoDBRepository = dynamoDBRepository,
+    datasetGenerateService = datasetGenerateService,
     clock = Clock.fixed(asOfDate.toInstant(ZoneOffset.UTC), ZoneId.systemDefault())
   )
 
@@ -32,6 +31,7 @@ class ReportScheduleServiceTest {
     val expected = listOf(
       DatasetWithReport(
         dataset = scheduledDataset,
+        datasource = datasource,
         productDefinitionId = productDefinition.id,
         report = report1
       )
@@ -45,12 +45,14 @@ class ReportScheduleServiceTest {
     name ="DataSet 1",
     datasource ="DS1",
     schedule = "0 15 10 ? * *",
+    query = ""
   )
 
   val nonScheduledDataset = Dataset(
     id = "dataset2",
     name ="DataSet 2 no schedule",
-    datasource ="DS2"
+    datasource ="DS2",
+    query = ""
   )
 
   val futureScheduledDataset = Dataset(
@@ -58,6 +60,7 @@ class ReportScheduleServiceTest {
     name ="DataSet 3",
     datasource ="DS3",
     schedule = "0 15 11 ? * *",
+    query = ""
   )
 
   val report1 = Report(
@@ -78,9 +81,18 @@ class ReportScheduleServiceTest {
     dataset = "\$ref:${futureScheduledDataset.id}"
   )
 
+  val datasource = Datasource(
+    id = "123",
+    name = "testDatasource",
+    database = "DIGITAL_PRISON_REPORTING",
+    catalog = "nomis"
+  )
   val productDefinition = ProductDefinition(
     id = "123",
     name = "testReport",
+    datasource = listOf(
+      datasource
+    ),
     dataset = listOf(
       scheduledDataset,
       nonScheduledDataset,
