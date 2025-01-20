@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
   kotlin("jvm") version "2.0.21"
   id("jacoco")
@@ -77,6 +79,14 @@ fun isNonStable(version: String): Boolean {
 tasks {
   withType<Test> {
     useJUnitPlatform()
+  },
+  withType<ShadowJar> {
+    // <WORKAROUND for="https://github.com/johnrengelman/shadow/issues/448">
+    configurations = listOf(
+      project.configurations.implementation.get(),
+      project.configurations.runtimeOnly.get()
+    ).onEach { it.isCanBeResolved = true }
+    // </WORKAROUND>
   }
 }
 
