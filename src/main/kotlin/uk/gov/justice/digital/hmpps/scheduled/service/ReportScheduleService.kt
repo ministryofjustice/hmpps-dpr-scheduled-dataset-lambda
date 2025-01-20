@@ -35,7 +35,7 @@ class ReportScheduleService(
       //GENERATE data sets
       scheduledDataSet.map{ scheduled ->
         val response = datasetGenerateService.generateDataset(scheduled, logger)
-        logger.log("report ${scheduled.report.name},  dataset ${scheduled.dataset.id}, got statement response " + response)
+        logger.log("report ${scheduled.report!!.name},  dataset ${scheduled.dataset.id}, got statement response " + response)
       }
     }
   }
