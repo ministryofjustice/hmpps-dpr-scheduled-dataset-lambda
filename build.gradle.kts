@@ -33,6 +33,7 @@ dependencies {
   implementation("org.slf4j:slf4j-api:2.0.16")
   implementation("software.amazon.awssdk:netty-nio-client:2.29.2")
   implementation("aws.sdk.kotlin:aws-http:1.3.90")
+  implementation("aws.sdk.kotlin:aws-http-jvm:1.3.90")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
