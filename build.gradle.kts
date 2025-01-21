@@ -29,6 +29,7 @@ dependencies {
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
   implementation("jakarta.activation:jakarta.activation-api:2.1.0")
   implementation("software.amazon.awssdk:apache-client:2.29.20")
+  implementation("org.slf4j:slf4j-api:2.0.16")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
