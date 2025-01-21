@@ -39,6 +39,7 @@ dependencies {
   implementation("aws.smithy.kotlin:http-auth-aws-jvm:1.3.28")
   implementation("aws.smithy.kotlin:aws-json-protocols:1.3.28")
   implementation("aws.smithy.kotlin:aws-json-protocols-jvm:1.3.28")
+  implementation("aws.smithy.kotlin:aws-protocol-core:1.3.28")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
