@@ -28,7 +28,7 @@ dependencies {
   //fixes for shadow jar
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
   implementation("jakarta.activation:jakarta.activation-api:2.1.0")
-  //implementation("software.amazon.awssdk:netty-nio-client:2.29.2")
+  implementation("software.amazon.awssdk:apache-client:2.29.20")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
