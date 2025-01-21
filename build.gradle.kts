@@ -24,7 +24,10 @@ dependencies {
   implementation("software.amazon.awssdk:redshiftdata:2.29.20")
   //implementation("software.amazon.awssdk:athena:2.29.20")
   implementation("aws.sdk.kotlin:dynamodb:1.3.90")
+
+  //fixes for shadow jar
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
+  implementation("jakarta.activation:jakarta.activation-api:2.1")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
