@@ -34,6 +34,7 @@ dependencies {
   implementation("software.amazon.awssdk:netty-nio-client:2.29.2")
   implementation("aws.sdk.kotlin:aws-http:1.3.90")
   implementation("aws.sdk.kotlin:aws-http-jvm:1.3.90")
+  implementation("aws.smithy.kotlin:http-auth-aws:1.3.28")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
