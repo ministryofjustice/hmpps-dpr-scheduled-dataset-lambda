@@ -27,7 +27,7 @@ dependencies {
 
   //fixes for shadow jar
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
-  implementation("jakarta.activation:jakarta.activation-api:2.1")
+  implementation("jakarta.activation:jakarta.activation-api:2.1.0")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
