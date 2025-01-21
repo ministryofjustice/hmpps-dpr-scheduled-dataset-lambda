@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
   kotlin("jvm") version "2.0.21"
   id("jacoco")
-  id("com.github.johnrengelman.shadow") version "8.1.1"
+  id("com.github.johnrengelman.shadow") version "7.1.1"
   id("org.barfuin.gradle.jacocolog") version "3.1.0"
   id("org.owasp.dependencycheck")  version "8.2.1"
 }
@@ -24,9 +24,6 @@ dependencies {
   implementation("software.amazon.awssdk:redshiftdata:2.29.20")
   //implementation("software.amazon.awssdk:athena:2.29.20")
   implementation("aws.sdk.kotlin:dynamodb:1.3.90")
-
-  implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
-  implementation("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
 
   //fixes for shadow jar
   /*
