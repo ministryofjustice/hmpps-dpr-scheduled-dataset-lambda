@@ -3,9 +3,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
   kotlin("jvm") version "2.0.21"
   id("jacoco")
-  id("com.github.johnrengelman.shadow") version "7.1.1"
+  id("com.github.johnrengelman.shadow") version "8.1.1"
   id("org.barfuin.gradle.jacocolog") version "3.1.0"
-  //id("org.owasp.dependencycheck")  version "8.2.1"
+  id("org.owasp.dependencycheck")  version "8.2.1"
 }
 
 configurations {
@@ -26,7 +26,7 @@ dependencies {
   implementation("aws.sdk.kotlin:dynamodb:1.3.90")
 
   //fixes for shadow jar
-  /*
+
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
   implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
   implementation("jakarta.activation:jakarta.activation-api:2.1.0")
@@ -37,7 +37,6 @@ dependencies {
   implementation("aws.sdk.kotlin:aws-http-jvm:1.3.90")
   implementation("aws.smithy.kotlin:http-auth-aws:1.3.28")
   implementation("aws.smithy.kotlin:http-auth-aws-jvm:1.3.28")
-  */
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
@@ -100,9 +99,9 @@ tasks {
       project.configurations.implementation.get(),
       project.configurations.runtimeOnly.get()
     ).onEach { it.isCanBeResolved = true }
-    // </WORKAROUND>
   }
 }
+
 
 /*
 project.getTasksByName("check", false).forEach {
