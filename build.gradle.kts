@@ -26,6 +26,7 @@ dependencies {
   implementation("aws.sdk.kotlin:dynamodb:1.3.90")
 
   //fixes for shadow jar
+  /*
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
   implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
   implementation("jakarta.activation:jakarta.activation-api:2.1.0")
@@ -36,7 +37,7 @@ dependencies {
   implementation("aws.sdk.kotlin:aws-http-jvm:1.3.90")
   implementation("aws.smithy.kotlin:http-auth-aws:1.3.28")
   implementation("aws.smithy.kotlin:http-auth-aws-jvm:1.3.28")
-
+  */
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
@@ -73,6 +74,7 @@ tasks.assemble {
 }
 
 repositories {
+  mavenLocal()
   mavenCentral()
 }
 
