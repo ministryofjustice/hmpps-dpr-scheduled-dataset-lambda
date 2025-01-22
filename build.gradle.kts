@@ -26,6 +26,7 @@ dependencies {
   //implementation("software.amazon.awssdk:athena:2.29.20")
   //implementation("aws.sdk.kotlin:dynamodb:1.3.90")
 
+  /*
   implementation("jakarta.activation:jakarta.activation-api:2.1.0")
   implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
@@ -35,6 +36,8 @@ dependencies {
   implementation("software.amazon.awssdk:netty-nio-client:2.29.20")
   implementation("io.netty:netty-resolver:4.1.115.Final")
   implementation("io.netty:netty-handler:4.1.115.Final")
+  */
+
 
   //fixes for shadow jar
   /*
