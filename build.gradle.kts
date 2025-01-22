@@ -27,6 +27,9 @@ dependencies {
   //implementation("aws.sdk.kotlin:dynamodb:1.3.90")
 
   implementation("jakarta.activation:jakarta.activation-api:2.1.0")
+  implementation("org.apache.httpcomponents:httpcore:4.4.16")
+  implementation("jakarta.activation:jakarta.activation-api:2.1.0")
+  implementation("org.slf4j:slf4j-api:2.0.16")
   //fixes for shadow jar
   /*
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
