@@ -33,6 +33,7 @@ dependencies {
   implementation("org.slf4j:slf4j-api:2.0.16")
   implementation("software.amazon.awssdk:apache-client:2.29.20")
   implementation("software.amazon.awssdk:netty-nio-client:2.29.20")
+  implementation("io.netty:netty-resolver:4.1.115.Final")
 
   //fixes for shadow jar
   /*
