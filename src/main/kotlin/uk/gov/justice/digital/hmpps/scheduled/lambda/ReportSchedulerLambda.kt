@@ -25,16 +25,12 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       dynamoDbClient = dynamoDbClient,
     )
 
-    val CLUSTER_ID_VAR_NAME = "CLUSTER_ID"
-    val DB_NAME_VAR_NAME = "DB_NAME"
-    val CREDENTIAL_SECRET_ARN_VAR_NAME = "CREDENTIAL_SECRET_ARN"
-
     val datasetGenerateService = DatasetGenerateService(
       redshiftDataClient = RedshiftDataClient.builder().region(Region.EU_WEST_2).build(),
       redshiftProperties = RedshiftProperties(
-        redshiftDataApiClusterId = System.getenv(CLUSTER_ID_VAR_NAME),
-        redshiftDataApiDb = System.getenv(DB_NAME_VAR_NAME),
-        redshiftDataApiSecretArn = System.getenv(CREDENTIAL_SECRET_ARN_VAR_NAME),
+        redshiftDataApiClusterId = System.getenv("CLUSTER_ID"),
+        redshiftDataApiDb = System.getenv("DB_NAME"),
+        redshiftDataApiSecretArn = System.getenv("CREDENTIAL_SECRET_ARN"),
       ),
     )
 

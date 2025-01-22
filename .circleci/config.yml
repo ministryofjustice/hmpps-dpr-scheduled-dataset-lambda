@@ -34,7 +34,7 @@ workflows:
           context:
             - hmpps-reporting-common
             - hmpps-reporting-orb
-          cache_key: "dpr-scheduled-lambda-build-cache-v4"
+          cache_key: "dpr-scheduled-lambda-build-cache-v3"
 
   owasp-security:
     triggers:
