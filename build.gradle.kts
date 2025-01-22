@@ -13,7 +13,7 @@ configurations {
 }
 
 dependencies {
-  implementation("com.amazonaws:aws-java-sdk-dynamodb:1.12.590")
+  //implementation("com.amazonaws:aws-java-sdk-dynamodb:1.12.590")
   implementation("com.amazonaws:aws-lambda-java-core:1.2.3")
   implementation("com.amazonaws:aws-lambda-java-events:3.11.3")
   implementation("org.quartz-scheduler:quartz:2.5.0")
@@ -22,11 +22,12 @@ dependencies {
   implementation("com.google.guava:guava:33.3.1-jre")
 
   implementation("software.amazon.awssdk:redshiftdata:2.29.20")
+  implementation("software.amazon.awssdk:dynamodb:2.29.20")
   //implementation("software.amazon.awssdk:athena:2.29.20")
-  implementation("aws.sdk.kotlin:dynamodb:1.3.90")
+  //implementation("aws.sdk.kotlin:dynamodb:1.3.90")
 
   //fixes for shadow jar
-
+  /*
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
   implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.2")
   implementation("jakarta.activation:jakarta.activation-api:2.1.0")
@@ -40,7 +41,7 @@ dependencies {
   implementation("aws.smithy.kotlin:aws-json-protocols:1.3.28")
   implementation("aws.smithy.kotlin:aws-json-protocols-jvm:1.3.28")
   implementation("aws.smithy.kotlin:aws-protocol-core:1.3.28")
-
+  */
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")

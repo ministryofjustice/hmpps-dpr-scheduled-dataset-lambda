@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.scheduled.lambda
 
-import aws.sdk.kotlin.services.dynamodb.DynamoDbClient
+
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.logging.LogLevel
-import kotlinx.coroutines.runBlocking
 import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDbProductDefinitionProperties
@@ -18,9 +18,11 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
   private var reportSchedulingService: ReportScheduleService? = null
 
   init {
+    val dynamoDbClient = DynamoDbClient.builder().region(Region.EU_WEST_2).build()
+
     val dynamoDBRepository = DynamoDBRepository(
       properties = DynamoDbProductDefinitionProperties(),
-      dynamoDbClient = DynamoDbClient { region = "eu-west-2" },
+      dynamoDbClient = dynamoDbClient,
     )
 
     val CLUSTER_ID_VAR_NAME = "CLUSTER_ID"
@@ -42,7 +44,7 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
     )
   }
 
-  override fun handleRequest(input: MutableMap<String, Any>?, context: Context?): String = runBlocking{
+  override fun handleRequest(input: MutableMap<String, Any>?, context: Context?): String {
 
     if (context != null) {
       val logger = context.logger
@@ -53,6 +55,6 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       logger.log("Finished report scheduler", LogLevel.INFO)
     }
 
-    return@runBlocking ""
+    return ""
   }
 }

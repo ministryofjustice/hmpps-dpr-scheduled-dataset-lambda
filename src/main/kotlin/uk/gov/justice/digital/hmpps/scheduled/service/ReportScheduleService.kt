@@ -21,7 +21,8 @@ class ReportScheduleService(
     const val SCHEMA_REF_PREFIX = "\$ref:"
   }
 
-  suspend fun processProductDefinitions(logger: LambdaLogger) {
+
+  fun processProductDefinitions(logger: LambdaLogger) {
     //FIND
     val productDefinitions = dynamoDBRepository.findReportsWithSchedule()
     logger.log("found product definitions " + productDefinitions.size)
@@ -43,7 +44,7 @@ class ReportScheduleService(
   /*
    * using this for testing dataset generation, will remove once finalised
    */
-  suspend fun testRun(logger: LambdaLogger) {
+  fun testRun(logger: LambdaLogger) {
 
     //FIND
     val productDefinitions = dynamoDBRepository.findReportsByFileName("court")
