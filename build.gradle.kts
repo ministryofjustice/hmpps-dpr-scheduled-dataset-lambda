@@ -32,6 +32,7 @@ dependencies {
   implementation("jakarta.activation:jakarta.activation-api:2.1.0")
   implementation("org.slf4j:slf4j-api:2.0.16")
   implementation("software.amazon.awssdk:apache-client:2.29.20")
+  implementation("software.amazon.awssdk:netty-nio-client:2.29.20")
 
   //fixes for shadow jar
   /*
