@@ -13,9 +13,8 @@ configurations {
 }
 
 dependencies {
-  //implementation("com.amazonaws:aws-java-sdk-dynamodb:1.12.590")
   implementation("com.amazonaws:aws-lambda-java-core:1.2.3")
-  implementation("com.amazonaws:aws-lambda-java-events:3.11.3")
+  //implementation("com.amazonaws:aws-lambda-java-events:3.11.3")
   implementation("org.quartz-scheduler:quartz:2.5.0")
 
   implementation("com.google.code.gson:gson:2.11.0")
@@ -23,9 +22,11 @@ dependencies {
 
   implementation("software.amazon.awssdk:redshiftdata:2.29.20")
   implementation("software.amazon.awssdk:dynamodb:2.29.20")
+
   //implementation("software.amazon.awssdk:athena:2.29.20")
   //implementation("aws.sdk.kotlin:dynamodb:1.3.90")
 
+  implementation("jakarta.activation:jakarta.activation-api:2.1.0")
   //fixes for shadow jar
   /*
   implementation("org.apache.httpcomponents:httpcore:4.4.16")
