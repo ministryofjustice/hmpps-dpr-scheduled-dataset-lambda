@@ -36,7 +36,7 @@ dependencies {
 
   implementation("software.amazon.awssdk:redshiftdata:2.29.20")
   implementation("software.amazon.awssdk:athena:2.29.20")
-  implementation("aws.sdk.kotlin:dynamodb:1.3.90")
+  implementation("aws.sdk.kotlin:dynamodb:1.4.3")
 
   // Fix dependency mismatch
   implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
