@@ -7,7 +7,6 @@ import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementRespon
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
 import java.util.*
-import kotlin.io.encoding.Base64
 
 data class StatementExecutionResponse(
   val tableId: String,
@@ -78,8 +77,8 @@ class DatasetGenerateService (
   fun buildDatasetQuery(query: String) = """WITH $DATASET_ AS ($query) SELECT * FROM $DATASET_"""
 
   fun DatasetWithReport.generateNewExternalTableId() : String {
-    val id = this.report.id + ".." + this.dataset.id
-    return Base64.encode(id).toString()
+    val id = this.report!!.id + ".." + this.dataset.id
+    return Base64.getEncoder().encodeToString(id.toByteArray())
   }
 
   fun generateNewExternalTableId(): String {
