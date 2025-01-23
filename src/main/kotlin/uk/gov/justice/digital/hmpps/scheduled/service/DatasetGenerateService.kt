@@ -78,7 +78,7 @@ class DatasetGenerateService (
 
   fun DatasetWithReport.generateNewExternalTableId() : String {
     val id = this.report!!.id + ".." + this.dataset.id
-    return Base64.getEncoder().encodeToString(id.toByteArray())
+    return "_" +Base64.getEncoder().encodeToString(id.toByteArray())
   }
 
   fun generateNewExternalTableId(): String {
