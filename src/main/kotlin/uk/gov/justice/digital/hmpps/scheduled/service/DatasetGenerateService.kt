@@ -7,6 +7,7 @@ import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementRespon
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
 import java.util.*
+import kotlin.io.encoding.Base64
 
 data class StatementExecutionResponse(
   val tableId: String,
@@ -31,7 +32,7 @@ class DatasetGenerateService (
 
   fun generateDataset(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
     //will need to look at using report id / dataset id so that this can be referenced dynamically
-    val tableId = generateNewExternalTableId()
+    val tableId = datasetWithReport.generateNewExternalTableId()
     logger.log("generated tableId " + tableId)
     val finalQuery = """
           CREATE EXTERNAL TABLE reports.$tableId 
@@ -74,7 +75,12 @@ class DatasetGenerateService (
     return query
   }
 
-  fun buildDatasetQuery(query: String) = """WITH $DATASET_ AS ($query)"""
+  fun buildDatasetQuery(query: String) = """WITH $DATASET_ AS ($query) SELECT * FROM $DATASET_"""
+
+  fun DatasetWithReport.generateNewExternalTableId() : String {
+    val id = this.report.id + ".." + this.dataset.id
+    return Base64.encode(id).toString()
+  }
 
   fun generateNewExternalTableId(): String {
     return "_" + UUID.randomUUID().toString().replace("-", "_")
