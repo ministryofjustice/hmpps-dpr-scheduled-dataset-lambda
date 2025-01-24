@@ -7,7 +7,6 @@ import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementRespon
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
 import uk.gov.justice.digital.hmpps.scheduled.model.generateNewExternalTableId
-import java.util.*
 
 data class StatementExecutionResponse(
   val tableId: String,
@@ -33,23 +32,26 @@ class DatasetGenerateService (
   fun generateDataset(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
     val tableId = datasetWithReport.generateNewExternalTableId()
     logger.log("generated tableId " + tableId)
-    val finalQuery = """
-          DROP TABLE IF EXIST reports.$tableId; 
+    val finalQuery = generateFinalQuery(tableId, datasetWithReport.dataset.query)
+    logger.log("attempting to execute final query " + finalQuery)
+
+    return executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
+  }
+
+  fun generateFinalQuery(tableId: String, datasetQuery: String) : String {
+    return """
+          DROP TABLE IF EXISTS reports.$tableId; 
           CREATE EXTERNAL TABLE reports.$tableId 
           STORED AS parquet 
           LOCATION 's3://${redshiftProperties.s3location}/$tableId/' 
           AS ( 
           ${
       buildFinalQuery(
-        datasetQuery = buildDatasetQuery(datasetWithReport.dataset.query),
+        datasetQuery = buildDatasetQuery(datasetQuery),
       )
-          }
+    }
           );
     """.trimIndent()
-
-    logger.log("attempting to execute final query " + finalQuery)
-
-    return executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
   }
 
   fun executeQueryAsync(
