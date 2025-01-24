@@ -7,4 +7,5 @@ class DynamoDbProductDefinitionProperties(
   val categoryFieldName: String = "category",
   val definitionFieldName: String = "definition",
   val categoryIndexName: String = "category-index",
+  val scheduleFieldName: String = "scheduled",
 )

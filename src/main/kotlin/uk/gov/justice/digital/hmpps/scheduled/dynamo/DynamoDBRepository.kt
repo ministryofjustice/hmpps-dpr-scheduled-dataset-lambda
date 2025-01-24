@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.scheduled.dynamo
 
+import com.amazonaws.services.lambda.runtime.LambdaLogger
 import com.google.gson.Gson
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
@@ -12,50 +13,61 @@ class DynamoDBRepository(
   private val gson: Gson = Gson(),
 ) {
 
-  fun findReportsWithSchedule(): List<ProductDefinition> {
-    return dynamoDbClient.scan(withFieldName("schedule")).items()
-      ?.map { gson.fromJson(it[properties.definitionFieldName]!!.s(), ProductDefinition::class.java) }
-      ?: emptyList()
+  fun findReportsWithSchedule(logger: LambdaLogger): List<ProductDefinition> {
+
+    val results = doQuery(logger = logger)
+    return results
+      .map {
+        it.log(logger)
+        gson.fromJson(it[properties.definitionFieldName]!!.s(), ProductDefinition::class.java)
+      }
   }
 
-  private fun withFieldName(fieldName: String): ScanRequest {
+  fun doQuery(results: MutableList<Map<String, AttributeValue>> = mutableListOf(),
+              lastKey: Map<String, AttributeValue> = emptyMap(),
+              logger: LambdaLogger) : List<Map<String, AttributeValue>> {
 
-    return ScanRequest.builder()
+    val response = dynamoDbClient.scan(withScanRequest(lastKey))
+
+    logger.log("find dpds response =" + response.toString()  )
+
+    if (response.hasItems()) {
+      results.addAll(response.items())
+    }
+    if (response.hasLastEvaluatedKey()) {
+      return doQuery(results, response.lastEvaluatedKey(), logger)
+    }
+    return results
+  }
+
+  private fun withScanRequest(lastKey: Map<String, AttributeValue> = emptyMap()): ScanRequest {
+
+    val scanBuilder =  ScanRequest.builder()
       .tableName(properties.tableName)
-      .filterExpression("contains(#definition,:val)")
+      .filterExpression("#scheduled = :val")
+      .limit(500)
+      .indexName(properties.categoryIndexName)
       .expressionAttributeNames(
         mapOf(
-          "#definition" to properties.definitionFieldName,
+          "#scheduled" to properties.scheduleFieldName,
         ),
       )
       .expressionAttributeValues(
         mapOf(
-          ":val" to AttributeValue.fromS("\"${fieldName}\""),
-        ),
-      ).build()
-  }
-
-  fun findReportsByFileName(fileName: String): List<ProductDefinition> {
-    return dynamoDbClient.scan(withScanRequest(fileName)).items()
-      ?.map { gson.fromJson(it[properties.definitionFieldName]!!.s(), ProductDefinition::class.java) }
-      ?: emptyList()
-  }
-
-  private fun withScanRequest(fileName: String): ScanRequest {
-
-    return ScanRequest.builder()
-      .tableName(properties.tableName)
-      .filterExpression("contains(#file_name,:val)")
-      .expressionAttributeNames(
-        mapOf(
-          "#file_name" to properties.fileNameFieldName,
+          ":val" to AttributeValue.fromS("true"),
         ),
       )
-      .expressionAttributeValues(
-        mapOf(
-          ":val" to AttributeValue.fromS(fileName),
-        ),
-      ).build()
+
+    if (lastKey.isNotEmpty()) {
+      scanBuilder.exclusiveStartKey(lastKey)
+    }
+
+    return scanBuilder.build()
+  }
+
+  fun Map<String, AttributeValue>.log(logger: LambdaLogger) {
+    logger.log("found id:=" + this[properties.idFieldName] + ", category=" + this[properties.categoryFieldName] +  ", fileName=" + this[properties.fileNameFieldName])
+
   }
 
 }

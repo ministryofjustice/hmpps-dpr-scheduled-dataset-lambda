@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.scheduled.model
 
+import java.util.*
+
 interface hasSchedule {
   val schedule: String?
 }
@@ -40,3 +42,8 @@ data class DatasetWithReport(
   val report: Report?,
   val datasource: Datasource,
 )
+
+fun DatasetWithReport.generateNewExternalTableId() : String {
+  val id = this.productDefinitionId + ":" + this.dataset.id
+  return "_" + Base64.getEncoder().encodeToString(id.toByteArray())
+}

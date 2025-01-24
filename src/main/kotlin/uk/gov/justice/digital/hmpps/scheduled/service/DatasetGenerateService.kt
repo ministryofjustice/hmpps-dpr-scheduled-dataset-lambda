@@ -6,6 +6,7 @@ import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementReques
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementResponse
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
+import uk.gov.justice.digital.hmpps.scheduled.model.generateNewExternalTableId
 import java.util.*
 
 data class StatementExecutionResponse(
@@ -30,10 +31,10 @@ class DatasetGenerateService (
   }
 
   fun generateDataset(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
-    //will need to look at using report id / dataset id so that this can be referenced dynamically
     val tableId = datasetWithReport.generateNewExternalTableId()
     logger.log("generated tableId " + tableId)
     val finalQuery = """
+          DROP TABLE IF EXIST reports.$tableId; 
           CREATE EXTERNAL TABLE reports.$tableId 
           STORED AS parquet 
           LOCATION 's3://${redshiftProperties.s3location}/$tableId/' 
@@ -76,12 +77,4 @@ class DatasetGenerateService (
 
   fun buildDatasetQuery(query: String) = """WITH $DATASET_ AS ($query) SELECT * FROM $DATASET_"""
 
-  fun DatasetWithReport.generateNewExternalTableId() : String {
-    val id = this.report!!.id + ".." + this.dataset.id
-    return "_" +Base64.getEncoder().encodeToString(id.toByteArray())
-  }
-
-  fun generateNewExternalTableId(): String {
-    return "_" + UUID.randomUUID().toString().replace("-", "_")
-  }
 }
