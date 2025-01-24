@@ -34,5 +34,9 @@ class DatasetGenerateServiceTest {
     val encoded = "_" + Base64.getEncoder().encodeToString(id.toByteArray())
 
     assertEquals(encoded, actual)
+
+    val actualEncoded = actual.substring(1).toByteArray()
+    val actualDecoded = Base64.getDecoder().decode(actualEncoded)
+    assertEquals(id, String(actualDecoded))
   }
 }

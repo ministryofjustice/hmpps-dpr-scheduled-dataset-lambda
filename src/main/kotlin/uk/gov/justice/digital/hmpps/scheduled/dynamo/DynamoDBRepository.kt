@@ -15,7 +15,9 @@ class DynamoDBRepository(
 
   fun findReportsWithSchedule(logger: LambdaLogger): List<ProductDefinition> {
 
-    val results = doQuery(logger = logger)
+    val results = doQuery(
+      logger = logger
+    )
     return results
       .map {
         it.log(logger)
@@ -69,5 +71,4 @@ class DynamoDBRepository(
     logger.log("found id:=" + this[properties.idFieldName] + ", category=" + this[properties.categoryFieldName] +  ", fileName=" + this[properties.fileNameFieldName])
 
   }
-
 }

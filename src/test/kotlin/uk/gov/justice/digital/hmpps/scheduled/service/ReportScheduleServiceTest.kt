@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.scheduled.service
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
@@ -40,5 +40,15 @@ class ReportScheduleServiceTest {
     assertEquals(expected, datasets)
   }
 
+  @Test
+  fun `Test Valid Cron expression at 9 59 not to be scheduled`() {
+    val everyDayAt909 = "0 59 9 ? * MON-FRI"
+    assertFalse(reportScheduleService.shouldBeScheduled(everyDayAt909))
+  }
 
+  @Test
+  fun `Test Valid Cron expression at 10 01 to be scheduled`() {
+    val everyDayAt909 = "0 01 10 ? * MON-FRI"
+    assertTrue(reportScheduleService.shouldBeScheduled(everyDayAt909))
+  }
 }
