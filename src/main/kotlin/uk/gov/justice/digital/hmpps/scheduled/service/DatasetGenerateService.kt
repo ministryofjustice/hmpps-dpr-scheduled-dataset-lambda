@@ -6,6 +6,7 @@ import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementReques
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementResponse
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
+import uk.gov.justice.digital.hmpps.scheduled.model.ExternalTableId
 import uk.gov.justice.digital.hmpps.scheduled.model.generateNewExternalTableId
 
 data class StatementExecutionResponse(
@@ -38,12 +39,12 @@ class DatasetGenerateService (
     return executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
   }
 
-  fun generateFinalQuery(tableId: String, datasetQuery: String) : String {
+  fun generateFinalQuery(tableId: ExternalTableId, datasetQuery: String) : String {
     return """
-          DROP TABLE IF EXISTS reports.$tableId; 
-          CREATE EXTERNAL TABLE reports.$tableId 
+          DROP TABLE IF EXISTS reports.${tableId.id}; 
+          CREATE EXTERNAL TABLE reports.${tableId.id}
           STORED AS parquet 
-          LOCATION 's3://${redshiftProperties.s3location}/$tableId/' 
+          LOCATION 's3://${redshiftProperties.s3location}/${tableId.id}/' 
           AS ( 
           ${
       buildFinalQuery(
@@ -56,7 +57,7 @@ class DatasetGenerateService (
 
   fun executeQueryAsync(
     datasource: Datasource,
-    tableId: String,
+    tableId: ExternalTableId,
     query: String,
   ): StatementExecutionResponse {
     val statementRequest = ExecuteStatementRequest.builder()
@@ -67,7 +68,7 @@ class DatasetGenerateService (
       .build()
 
     val response: ExecuteStatementResponse = redshiftDataClient.executeStatement(statementRequest)
-    return StatementExecutionResponse(tableId, response.id())
+    return StatementExecutionResponse(tableId.id, response.id())
   }
 
   protected fun buildFinalQuery(

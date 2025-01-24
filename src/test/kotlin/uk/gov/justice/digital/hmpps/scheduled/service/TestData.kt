@@ -37,7 +37,7 @@ fun datasestWithUUID(uuid: UUID)  = Dataset(
   query = ""
 )
 
-val report1 = Report(
+val reportWithUUID = Report(
   id = "778456ed-448e-4501-8818-38947ba64476",
   name = "Report 1",
   dataset = "\$ref:${scheduledDataset.id}"
@@ -73,7 +73,7 @@ val productDefinition = ProductDefinition(
     futureScheduledDataset
   ),
   report = listOf(
-    report1,
+    reportWithUUID,
     report2,
     report3
   )

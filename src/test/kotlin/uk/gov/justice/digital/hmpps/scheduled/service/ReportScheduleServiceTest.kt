@@ -33,7 +33,7 @@ class ReportScheduleServiceTest {
         dataset = scheduledDataset,
         datasource = datasource,
         productDefinitionId = productDefinition.id,
-        report = report1
+        report = reportWithUUID
       )
     )
 
