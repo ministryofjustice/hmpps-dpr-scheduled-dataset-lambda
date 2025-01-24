@@ -1,14 +1,12 @@
 package uk.gov.justice.digital.hmpps.scheduled.service
 
-import com.amazonaws.services.lambda.runtime.LambdaLogger
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
+import uk.gov.justice.digital.hmpps.scheduled.model.decodedExternalTableId
 import uk.gov.justice.digital.hmpps.scheduled.model.generateNewExternalTableId
 import java.util.*
 
@@ -27,10 +25,8 @@ class DatasetGenerateServiceTest {
     redshiftProperties
   )
 
-  val logger =  mock<LambdaLogger>()
-
   @Test
-  fun `Find generate table id based on product definition id and dataset id`() {
+  fun `Find generate table id based on simple product definition id and dataset id`() {
 
     val dataSet = DatasetWithReport(
       dataset = scheduledDataset,
@@ -46,9 +42,34 @@ class DatasetGenerateServiceTest {
 
     assertEquals(encoded, actual)
 
-    val actualEncoded = actual.substring(1).toByteArray()
-    val actualDecoded = Base64.getDecoder().decode(actualEncoded)
-    assertEquals(id, String(actualDecoded))
+    val actualDecoded = actual.decodedExternalTableId()
+    assertEquals(dataSet.productDefinitionId, actualDecoded.first)
+    assertEquals(dataSet.dataset.id, actualDecoded.second)
+  }
+
+  @Test
+  fun `generate table id based on UUIDs product definition id and dataset id`() {
+
+
+    val dataSet = DatasetWithReport(
+      dataset = datasestWithUUID(UUID.fromString("778456ed-448e-4501-8818-38947ba64406")),
+      datasource = datasource,
+      productDefinitionId = productDefinition.id,
+      report = report1
+    )
+
+    val actual = dataSet.generateNewExternalTableId()
+
+    val id = dataSet.productDefinitionId + ":" + dataSet.dataset.id
+    val encoded = "_" + Base64.getEncoder().encodeToString(id.toByteArray()).replace("==","__")
+
+    assertFalse(actual.contains("="))
+
+    assertEquals(encoded, actual)
+
+    val actualDecoded = actual.decodedExternalTableId()
+    assertEquals(dataSet.productDefinitionId, actualDecoded.first)
+    assertEquals(dataSet.dataset.id, actualDecoded.second)
   }
 
   @Test

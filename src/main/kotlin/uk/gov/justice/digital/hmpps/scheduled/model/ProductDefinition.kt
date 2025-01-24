@@ -45,5 +45,16 @@ data class DatasetWithReport(
 
 fun DatasetWithReport.generateNewExternalTableId() : String {
   val id = this.productDefinitionId + ":" + this.dataset.id
-  return "_" + Base64.getEncoder().encodeToString(id.toByteArray())
+  val encodedId = Base64.getEncoder().encodeToString(id .toByteArray())
+  val updatedId = encodedId.replace("==", "__")
+  return "_" + updatedId
+}
+
+fun String.decodedExternalTableId(): Pair<String, String> {
+
+  val correctId = this.substring(1).replace("__","==").toByteArray()
+  val actualDecodedBytes = Base64.getDecoder().decode(correctId)
+  val actualDecoded = String(actualDecodedBytes)
+  val parts = actualDecoded.split(":")
+  return Pair(parts.first(), parts.last())
 }

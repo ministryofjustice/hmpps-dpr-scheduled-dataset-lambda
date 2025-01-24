@@ -4,8 +4,7 @@ import uk.gov.justice.digital.hmpps.scheduled.model.Dataset
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
 import uk.gov.justice.digital.hmpps.scheduled.model.ProductDefinition
 import uk.gov.justice.digital.hmpps.scheduled.model.Report
-
-
+import java.util.*
 
 val scheduledDataset = Dataset(
   id = "dataset1",
@@ -30,8 +29,16 @@ val futureScheduledDataset = Dataset(
   query = ""
 )
 
+fun datasestWithUUID(uuid: UUID)  = Dataset(
+  id = uuid.toString(),
+  name ="DataSet 3",
+  datasource ="DS3",
+  schedule = "0 15 11 ? * *",
+  query = ""
+)
+
 val report1 = Report(
-  id = "report1",
+  id = "778456ed-448e-4501-8818-38947ba64476",
   name = "Report 1",
   dataset = "\$ref:${scheduledDataset.id}"
 )
