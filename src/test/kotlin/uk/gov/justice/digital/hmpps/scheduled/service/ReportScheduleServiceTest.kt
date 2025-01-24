@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.scheduled.service
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
@@ -40,68 +40,15 @@ class ReportScheduleServiceTest {
     assertEquals(expected, datasets)
   }
 
-  val scheduledDataset = Dataset(
-    id = "dataset1",
-    name ="DataSet 1",
-    datasource ="DS1",
-    schedule = "0 15 10 ? * *",
-    query = ""
-  )
+  @Test
+  fun `Test Valid Cron expression at 9 59 not to be scheduled`() {
+    val everyDayAt909 = "0 59 9 ? * MON-FRI"
+    assertFalse(reportScheduleService.shouldBeScheduled(everyDayAt909))
+  }
 
-  val nonScheduledDataset = Dataset(
-    id = "dataset2",
-    name ="DataSet 2 no schedule",
-    datasource ="DS2",
-    query = ""
-  )
-
-  val futureScheduledDataset = Dataset(
-    id = "dataset3",
-    name ="DataSet 3",
-    datasource ="DS3",
-    schedule = "0 15 11 ? * *",
-    query = ""
-  )
-
-  val report1 = Report(
-    id = "report1",
-    name = "Report 1",
-    dataset = "\$ref:${scheduledDataset.id}"
-  )
-
-  val report2 =  Report(
-    id = "report2",
-    name = "Report 2",
-    dataset = "\$ref:${nonScheduledDataset.id}"
-  )
-
-  val report3 =  Report(
-    id = "report3",
-    name = "Report 3",
-    dataset = "\$ref:${futureScheduledDataset.id}"
-  )
-
-  val datasource = Datasource(
-    id = "123",
-    name = "testDatasource",
-    database = "DIGITAL_PRISON_REPORTING",
-    catalog = "nomis"
-  )
-  val productDefinition = ProductDefinition(
-    id = "123",
-    name = "testReport",
-    datasource = listOf(
-      datasource
-    ),
-    dataset = listOf(
-      scheduledDataset,
-      nonScheduledDataset,
-      futureScheduledDataset
-    ),
-    report = listOf(
-      report1,
-      report2,
-      report3
-    )
-  )
+  @Test
+  fun `Test Valid Cron expression at 10 01 to be scheduled`() {
+    val everyDayAt909 = "0 01 10 ? * MON-FRI"
+    assertTrue(reportScheduleService.shouldBeScheduled(everyDayAt909))
+  }
 }

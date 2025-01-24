@@ -6,7 +6,7 @@ import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementReques
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementResponse
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
-import java.util.*
+import uk.gov.justice.digital.hmpps.scheduled.model.generateNewExternalTableId
 
 data class StatementExecutionResponse(
   val tableId: String,
@@ -30,25 +30,28 @@ class DatasetGenerateService (
   }
 
   fun generateDataset(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
-    //will need to look at using report id / dataset id so that this can be referenced dynamically
-    val tableId = generateNewExternalTableId()
+    val tableId = datasetWithReport.generateNewExternalTableId()
     logger.log("generated tableId " + tableId)
-    val finalQuery = """
+    val finalQuery = generateFinalQuery(tableId, datasetWithReport.dataset.query)
+    logger.log("attempting to execute final query " + finalQuery)
+
+    return executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
+  }
+
+  fun generateFinalQuery(tableId: String, datasetQuery: String) : String {
+    return """
+          DROP TABLE IF EXISTS reports.$tableId; 
           CREATE EXTERNAL TABLE reports.$tableId 
           STORED AS parquet 
           LOCATION 's3://${redshiftProperties.s3location}/$tableId/' 
           AS ( 
           ${
       buildFinalQuery(
-        datasetQuery = buildDatasetQuery(datasetWithReport.dataset.query),
+        datasetQuery = buildDatasetQuery(datasetQuery),
       )
-          }
+    }
           );
     """.trimIndent()
-
-    logger.log("attempting to execute final query " + finalQuery)
-
-    return executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
   }
 
   fun executeQueryAsync(
@@ -74,9 +77,6 @@ class DatasetGenerateService (
     return query
   }
 
-  fun buildDatasetQuery(query: String) = """WITH $DATASET_ AS ($query)"""
+  fun buildDatasetQuery(query: String) = """WITH $DATASET_ AS ($query) SELECT * FROM $DATASET_"""
 
-  fun generateNewExternalTableId(): String {
-    return "_" + UUID.randomUUID().toString().replace("-", "_")
-  }
 }

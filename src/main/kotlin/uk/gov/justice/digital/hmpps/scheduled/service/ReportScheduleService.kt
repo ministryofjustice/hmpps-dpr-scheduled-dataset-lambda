@@ -21,10 +21,9 @@ class ReportScheduleService(
     const val SCHEMA_REF_PREFIX = "\$ref:"
   }
 
-
   fun processProductDefinitions(logger: LambdaLogger) {
     //FIND
-    val productDefinitions = dynamoDBRepository.findReportsWithSchedule()
+    val productDefinitions = dynamoDBRepository.findReportsWithSchedule(logger)
     logger.log("found product definitions " + productDefinitions.size)
 
     if (productDefinitions.isNotEmpty()) {
@@ -47,7 +46,7 @@ class ReportScheduleService(
   fun testRun(logger: LambdaLogger) {
 
     //FIND
-    val productDefinitions = dynamoDBRepository.findReportsByFileName("court")
+    val productDefinitions = dynamoDBRepository.findReportsWithSchedule(logger)
     logger.log("found definitions " + productDefinitions.size)
 
     if (productDefinitions.isNotEmpty()) {

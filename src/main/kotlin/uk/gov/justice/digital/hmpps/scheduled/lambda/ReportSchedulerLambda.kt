@@ -18,7 +18,8 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
   private var reportSchedulingService: ReportScheduleService? = null
 
   init {
-    val dynamoDbClient = DynamoDbClient.builder().region(Region.EU_WEST_2).build()
+    val dynamoDbClient = DynamoDbClient.builder()
+      .region(Region.EU_WEST_2).build()
 
     val dynamoDBRepository = DynamoDBRepository(
       properties = DynamoDbProductDefinitionProperties(),
@@ -46,7 +47,8 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       val logger = context.logger
       logger.log("Started report scheduler", LogLevel.INFO)
 
-      reportSchedulingService!!.processProductDefinitions(logger)
+      //reportSchedulingService!!.processProductDefinitions(logger)
+      reportSchedulingService!!.testRun(logger)
 
       logger.log("Finished report scheduler", LogLevel.INFO)
     }
