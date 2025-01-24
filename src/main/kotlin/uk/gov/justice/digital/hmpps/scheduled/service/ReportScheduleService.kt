@@ -47,9 +47,6 @@ class ReportScheduleService(
 
     //FIND
     val productDefinitions = dynamoDBRepository.findReportsWithSchedule(logger)
-    //val productDefinitions = dynamoDBRepository.findTestReports("definitions/prisons/test", logger)
-    //val productDefinitions = dynamoDBRepository.findReportsById("test", logger)
-    //val productDefinitions = dynamoDBRepository.findReportsByFileName("", logger)
     logger.log("found definitions " + productDefinitions.size)
 
     if (productDefinitions.isNotEmpty()) {
