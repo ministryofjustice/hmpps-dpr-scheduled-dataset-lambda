@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito.mock
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
-import uk.gov.justice.digital.hmpps.scheduled.model.decodedExternalTableId
+import uk.gov.justice.digital.hmpps.scheduled.model.ExternalTableId
 import uk.gov.justice.digital.hmpps.scheduled.model.generateNewExternalTableId
 import java.util.*
 
@@ -32,7 +32,7 @@ class DatasetGenerateServiceTest {
       dataset = scheduledDataset,
       datasource = datasource,
       productDefinitionId = productDefinition.id,
-      report = report1
+      report = reportWithUUID
     )
 
     val actual = dataSet.generateNewExternalTableId()
@@ -40,9 +40,9 @@ class DatasetGenerateServiceTest {
     val id = dataSet.productDefinitionId + ":" + dataSet.dataset.id
     val encoded = "_" + Base64.getEncoder().encodeToString(id.toByteArray())
 
-    assertEquals(encoded, actual)
+    assertEquals(encoded, actual.id)
 
-    val actualDecoded = actual.decodedExternalTableId()
+    val actualDecoded = actual.decode()
     assertEquals(dataSet.productDefinitionId, actualDecoded.first)
     assertEquals(dataSet.dataset.id, actualDecoded.second)
   }
@@ -50,12 +50,11 @@ class DatasetGenerateServiceTest {
   @Test
   fun `generate table id based on UUIDs product definition id and dataset id`() {
 
-
     val dataSet = DatasetWithReport(
       dataset = datasestWithUUID(UUID.fromString("778456ed-448e-4501-8818-38947ba64406")),
       datasource = datasource,
       productDefinitionId = productDefinition.id,
-      report = report1
+      report = reportWithUUID
     )
 
     val actual = dataSet.generateNewExternalTableId()
@@ -63,11 +62,11 @@ class DatasetGenerateServiceTest {
     val id = dataSet.productDefinitionId + ":" + dataSet.dataset.id
     val encoded = "_" + Base64.getEncoder().encodeToString(id.toByteArray()).replace("==","__")
 
-    assertFalse(actual.contains("="))
+    assertFalse(actual.id.contains("="))
 
-    assertEquals(encoded, actual)
+    assertEquals(encoded, actual.id)
 
-    val actualDecoded = actual.decodedExternalTableId()
+    val actualDecoded = actual.decode()
     assertEquals(dataSet.productDefinitionId, actualDecoded.first)
     assertEquals(dataSet.dataset.id, actualDecoded.second)
   }
@@ -77,11 +76,11 @@ class DatasetGenerateServiceTest {
 
     val datasetQuery = "SELECT prisoner.number FROM datamart.prisoner_profile as prisoner WHERE prisoner.active = 'Y'"
 
-    val query = datasetGenerateService.generateFinalQuery("_123", datasetQuery)
+    val query = datasetGenerateService.generateFinalQuery(ExternalTableId("_123"), datasetQuery)
 
     val expected ="""
       DROP TABLE IF EXISTS reports._123; 
-      CREATE EXTERNAL TABLE reports._123 
+      CREATE EXTERNAL TABLE reports._123
       STORED AS parquet 
       LOCATION 's3://dpr-working-development/reports/_123/' 
       AS ( 
@@ -90,6 +89,5 @@ class DatasetGenerateServiceTest {
     """.trimIndent()
 
     assertEquals(expected, query)
-
   }
 }
