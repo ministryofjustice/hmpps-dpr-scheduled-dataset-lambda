@@ -33,9 +33,13 @@ class ReportScheduleService(
       logger.log("following datasets due to be scheduled " + scheduledDataSet)
 
       //GENERATE data sets
-      scheduledDataSet.map{ scheduled ->
-        val response = datasetGenerateService.generateDataset(scheduled, logger)
-        logger.log("report ${scheduled.report!!.name},  dataset ${scheduled.dataset.id}, got statement response " + response)
+      scheduledDataSet.map { scheduled ->
+        if (scheduled.datasource.name == "datamart") {
+          val response = datasetGenerateService.generateDataset(scheduled, logger)
+          logger.log("report ${scheduled.report!!.name},  dataset ${scheduled.dataset.id}, got statement response " + response)
+        } else {
+          logger.log("report ${scheduled.report!!.name},  dataset ${scheduled.dataset.id}, has datasource ${scheduled.datasource.name} not currently supported")
+        }
       }
     }
   }
@@ -50,8 +54,8 @@ class ReportScheduleService(
     logger.log("found definitions " + productDefinitions.size)
 
     if (productDefinitions.isNotEmpty()) {
-      productDefinitions.map{ productDefinition ->
-        logger.log("found definitions id " + productDefinition.id + ", report name= " +productDefinition.name + ", datasource=" + productDefinition.datasource )
+      productDefinitions.map { productDefinition ->
+        logger.log("found definitions id " + productDefinition.id + ", report name= " + productDefinition.name + ", datasource=" + productDefinition.datasource)
       }
 
       //test PROCESS first one
@@ -68,17 +72,17 @@ class ReportScheduleService(
     logger.log("following datasets due to be scheduled " + scheduled)
   }
 
-  fun extractDatasetsToBeScheduled(productDefs: List<ProductDefinition>) :List<DatasetWithReport> {
-    return productDefs.map{filterDatasetToBeScheduled(it)}.flatMap { it }
+  fun extractDatasetsToBeScheduled(productDefs: List<ProductDefinition>): List<DatasetWithReport> {
+    return productDefs.map { filterDatasetToBeScheduled(it) }.flatMap { it }
   }
 
   fun flattenDataset(productDefinition: ProductDefinition, datasets: List<Dataset>): List<DatasetWithReport> {
 
-    val reportToDataSet = productDefinition.report.map{report ->
+    val reportToDataSet = productDefinition.report.map { report ->
       Pair(report.dataset.removePrefix(SCHEMA_REF_PREFIX), report)
     }.toMap()
 
-    return datasets.map{ dataset ->
+    return datasets.map { dataset ->
       DatasetWithReport(
         dataset = dataset,
         report = reportToDataSet.get(dataset.id),
@@ -88,23 +92,23 @@ class ReportScheduleService(
     }
   }
 
-  fun filterDatasetToBeScheduled(productDefinition: ProductDefinition) :List<DatasetWithReport> {
+  fun filterDatasetToBeScheduled(productDefinition: ProductDefinition): List<DatasetWithReport> {
 
     val dataSets = productDefinition.dataset
-      .filter{entity -> entity.hasSchedule() && shouldBeScheduled(entity.schedule!!)}
+      .filter { entity -> entity.hasSchedule() && shouldBeScheduled(entity.schedule!!) }
 
     return flattenDataset(productDefinition, dataSets)
   }
 
-  fun shouldBeScheduled(schedule: String) : Boolean {
+  fun shouldBeScheduled(schedule: String): Boolean {
     val cronTrigger = CronExpression(schedule)
-    val now = LocalDateTime.ofInstant(clock.instant(),ZoneId.systemDefault() )
+    val now = LocalDateTime.ofInstant(clock.instant(), ZoneId.systemDefault())
     val date = now.toDate()
     val next = cronTrigger.getNextValidTimeAfter(date)
     return if (next.toLocalDateTime() <= now.plusHours(1)) true else false
   }
 }
 
-fun hasSchedule.hasSchedule() = this.schedule!=null && this.schedule!!.isNotEmpty()
-fun Date.toLocalDateTime() = LocalDateTime.ofInstant(this.toInstant(),ZoneId.systemDefault())
+fun hasSchedule.hasSchedule() = this.schedule != null && this.schedule!!.isNotEmpty()
+fun Date.toLocalDateTime() = LocalDateTime.ofInstant(this.toInstant(), ZoneId.systemDefault())
 fun LocalDateTime.toDate() = Date.from(this.atZone(ZoneId.systemDefault()).toInstant())

@@ -50,7 +50,6 @@ class DatasetGenerateServiceTest {
   @Test
   fun `generate table id based on UUIDs product definition id and dataset id`() {
 
-
     val dataSet = DatasetWithReport(
       dataset = datasestWithUUID(UUID.fromString("778456ed-448e-4501-8818-38947ba64406")),
       datasource = datasource,
@@ -90,6 +89,5 @@ class DatasetGenerateServiceTest {
     """.trimIndent()
 
     assertEquals(expected, query)
-
   }
 }
