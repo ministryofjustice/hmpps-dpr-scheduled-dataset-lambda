@@ -20,7 +20,7 @@ dependencies {
   implementation("com.google.guava:guava:33.3.1-jre")
 
   implementation("software.amazon.awssdk:redshiftdata:2.29.20")
-  implementation("software.amazon.awssdk:dynamodb:2.29.20")
+  implementation("software.amazon.awssdk:dynamodb:2.30.7")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
