@@ -47,8 +47,8 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       val logger = context.logger
       logger.log("Started report scheduler", LogLevel.INFO)
 
-      reportSchedulingService!!.processProductDefinitions(logger)
-      //reportSchedulingService!!.testRun(logger)
+      //reportSchedulingService!!.processProductDefinitions(logger)
+      reportSchedulingService!!.testRun(logger)
 
       logger.log("Finished report scheduler", LogLevel.INFO)
     }
