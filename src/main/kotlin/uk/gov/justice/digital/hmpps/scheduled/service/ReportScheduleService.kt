@@ -34,11 +34,11 @@ class ReportScheduleService(
 
       //GENERATE data sets
       scheduledDataSet.map { scheduled ->
-        if (scheduled.datasource.name == "datamart") {
+        if (scheduled.dataset.datasource == "datamart") {
           val response = datasetGenerateService.generateDataset(scheduled, logger)
-          logger.log("report ${scheduled.report!!.name},  dataset ${scheduled.dataset.id}, got statement response " + response)
+          logger.log("definition ${scheduled.productDefinitionId},  dataset ${scheduled.dataset.id}, got statement response " + response)
         } else {
-          logger.log("report ${scheduled.report!!.name},  dataset ${scheduled.dataset.id}, has datasource ${scheduled.datasource.name} not currently supported")
+          logger.log("definition ${scheduled.productDefinitionId},  dataset ${scheduled.dataset.id}, has datasource ${scheduled.dataset.datasource} not currently supported")
         }
       }
     }
