@@ -35,7 +35,7 @@ class RedshiftStatementStatusServiceTest{
 
   val execId = "1234"
   @Test
-  fun `Failed query status throws correct StatementExecutionException with error from redshift`() {
+  fun `Failed query status throws StatementExecutionException with error from redshift`() {
 
     val describeResponse = mock<DescribeStatementResponse>()
 
@@ -57,7 +57,7 @@ class RedshiftStatementStatusServiceTest{
   }
 
   @Test
-  fun `Aborted query status throws correct StatementExecutionException with error from redshift`() {
+  fun `Aborted query status throws StatementExecutionException`() {
 
     val describeResponse = mock<DescribeStatementResponse>()
     val statusString = mock<StatusString>()
