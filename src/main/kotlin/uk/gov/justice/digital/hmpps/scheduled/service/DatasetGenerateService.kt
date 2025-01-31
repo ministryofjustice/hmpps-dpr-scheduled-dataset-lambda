@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementRequest
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementResponse
+import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
 import uk.gov.justice.digital.hmpps.scheduled.model.ExternalTableId
@@ -24,6 +25,8 @@ data class RedshiftProperties(
 class DatasetGenerateService (
   private val redshiftDataClient: RedshiftDataClient,
   private val redshiftProperties: RedshiftProperties,
+  private val eventBridge: EventBridge,
+  private val redshiftStatementStatusService: RedshiftStatementStatusService = RedshiftStatementStatusService(redshiftDataClient, redshiftProperties),
 ) {
 
   companion object {
@@ -31,6 +34,21 @@ class DatasetGenerateService (
   }
 
   fun generateDataset(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
+    val tableId = datasetWithReport.generateNewExternalTableId()
+    logger.log("generated tableId " + tableId)
+    val finalQuery = generateFinalQuery(tableId, datasetWithReport.dataset.query)
+    logger.log("attempting to execute final query " + finalQuery)
+
+    val response = executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
+    val status = this.redshiftStatementStatusService.andWait(response, logger)
+    if (status == ExecutionStatus.SUBMITTED) {
+        //if its not completed yet send to event bridge
+        eventBridge.send(response, logger)
+    }
+    return response
+  }
+
+  fun generateDatasetAsync(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
     val tableId = datasetWithReport.generateNewExternalTableId()
     logger.log("generated tableId " + tableId)
     val finalQuery = generateFinalQuery(tableId, datasetWithReport.dataset.query)

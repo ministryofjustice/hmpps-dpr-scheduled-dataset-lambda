@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.scheduled.service
 import com.amazonaws.services.lambda.runtime.LambdaLogger
 import org.quartz.CronExpression
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
+import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.model.Dataset
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.ProductDefinition
@@ -15,6 +16,7 @@ import java.util.*
 class ReportScheduleService(
   private val dynamoDBRepository: DynamoDBRepository,
   private val datasetGenerateService: DatasetGenerateService,
+  private val eventBridge: EventBridge,
   private val clock: Clock = Clock.systemDefaultZone(),
 ) {
   companion object {
@@ -35,8 +37,9 @@ class ReportScheduleService(
       //GENERATE data sets
       scheduledDataSet.map { scheduled ->
         if (scheduled.dataset.datasource == "datamart") {
-          val response = datasetGenerateService.generateDataset(scheduled, logger)
+          val response = datasetGenerateService.generateDatasetAsync(scheduled, logger)
           logger.log("definition ${scheduled.productDefinitionId},  dataset ${scheduled.dataset.id}, got statement response " + response)
+          eventBridge.send(response, logger)
         } else {
           logger.log("definition ${scheduled.productDefinitionId},  dataset ${scheduled.dataset.id}, has datasource ${scheduled.dataset.datasource} not currently supported")
         }
@@ -63,8 +66,12 @@ class ReportScheduleService(
 
       val flattenDataSet = flattenDataset(productDefinition, productDefinition.dataset).first()
       logger.log("atttempting to generate dataset for " + flattenDataSet)
+      //val response = datasetGenerateService.generateDatasetAsync(flattenDataSet, logger)
       val response = datasetGenerateService.generateDataset(flattenDataSet, logger)
+
       logger.log("got statement response " + response)
+
+      //eventBridge.send(response, logger)
     }
 
     //SCHEDULE
@@ -106,6 +113,11 @@ class ReportScheduleService(
     val date = now.toDate()
     val next = cronTrigger.getNextValidTimeAfter(date)
     return if (next.toLocalDateTime() <= now.plusHours(1)) true else false
+  }
+
+  fun testEventBridge(logger: LambdaLogger) {
+    eventBridge.listBuses(logger)
+    eventBridge.createRule(logger)
   }
 }
 

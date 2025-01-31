@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
+import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.model.*
 import java.time.Clock
 import java.time.LocalDateTime
@@ -14,12 +15,15 @@ class ReportScheduleServiceTest {
 
   val dynamoDBRepository = mock<DynamoDBRepository>()
   val datasetGenerateService = mock<DatasetGenerateService>()
+  val eventBridge = mock<EventBridge>()
+  val redshiftStatementStatusService = mock<RedshiftStatementStatusService>()
 
   val asOfDate = LocalDateTime.of(2024,12,9, 10,0,0)
 
   val reportScheduleService = ReportScheduleService(
     dynamoDBRepository = dynamoDBRepository,
     datasetGenerateService = datasetGenerateService,
+    eventBridge = eventBridge,
     clock = Clock.fixed(asOfDate.toInstant(ZoneOffset.UTC), ZoneId.systemDefault())
   )
 

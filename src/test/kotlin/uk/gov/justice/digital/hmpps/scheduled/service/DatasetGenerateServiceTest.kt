@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito.mock
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
+import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.ExternalTableId
 import uk.gov.justice.digital.hmpps.scheduled.model.generateNewExternalTableId
@@ -13,6 +14,8 @@ import java.util.*
 class DatasetGenerateServiceTest {
 
   val redshiftDataClient = mock<RedshiftDataClient>()
+  val eventBridge = mock<EventBridge>()
+
   val redshiftProperties = RedshiftProperties(
     s3location = "dpr-working-development/reports",
     redshiftDataApiDb = "dpr-product-definitions",
@@ -22,7 +25,8 @@ class DatasetGenerateServiceTest {
 
   val datasetGenerateService = DatasetGenerateService(
     redshiftDataClient,
-    redshiftProperties
+    redshiftProperties,
+    eventBridge
   )
 
   @Test

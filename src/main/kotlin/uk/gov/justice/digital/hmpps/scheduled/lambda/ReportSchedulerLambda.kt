@@ -6,12 +6,16 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.logging.LogLevel
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.eventbridge.EventBridgeClient
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDbProductDefinitionProperties
+import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.service.DatasetGenerateService
 import uk.gov.justice.digital.hmpps.scheduled.service.RedshiftProperties
+import uk.gov.justice.digital.hmpps.scheduled.service.RedshiftStatementStatusService
 import uk.gov.justice.digital.hmpps.scheduled.service.ReportScheduleService
+
 
 class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
 
@@ -26,30 +30,40 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       dynamoDbClient = dynamoDbClient,
     )
 
+    val redshiftDataClient = RedshiftDataClient.builder().region(Region.EU_WEST_2).build()
+    val redshiftProperties = RedshiftProperties(
+      redshiftDataApiClusterId = System.getenv("CLUSTER_ID"),
+      redshiftDataApiDb = System.getenv("DB_NAME"),
+      redshiftDataApiSecretArn = System.getenv("CREDENTIAL_SECRET_ARN"),
+    )
+
+    val eventBridgeClient = EventBridgeClient.builder()
+      .region(Region.EU_WEST_2)
+      .build()
+
     val datasetGenerateService = DatasetGenerateService(
-      redshiftDataClient = RedshiftDataClient.builder().region(Region.EU_WEST_2).build(),
-      redshiftProperties = RedshiftProperties(
-        redshiftDataApiClusterId = System.getenv("CLUSTER_ID"),
-        redshiftDataApiDb = System.getenv("DB_NAME"),
-        redshiftDataApiSecretArn = System.getenv("CREDENTIAL_SECRET_ARN"),
-      ),
+      redshiftDataClient = redshiftDataClient,
+      redshiftProperties = redshiftProperties,
+      eventBridge = EventBridge(eventBridgeClient),
     )
 
     reportSchedulingService = ReportScheduleService(
       dynamoDBRepository,
       datasetGenerateService,
+      EventBridge(eventBridgeClient),
     )
   }
 
-  override fun handleRequest(input: MutableMap<String, Any>?, context: Context?): String {
+  override fun handleRequest(payload: MutableMap<String, Any>, context: Context?): String {
 
     if (context != null) {
       val logger = context.logger
       logger.log("Started report scheduler", LogLevel.INFO)
 
-      reportSchedulingService!!.processProductDefinitions(logger)
-      //reportSchedulingService!!.testRun(logger)
-
+      logger.log("Received event $payload", LogLevel.INFO)
+      //reportSchedulingService!!.processProductDefinitions(logger)
+      reportSchedulingService!!.testRun(logger)
+      //reportSchedulingService!!.testEventBridge(logger)
       logger.log("Finished report scheduler", LogLevel.INFO)
     }
 
