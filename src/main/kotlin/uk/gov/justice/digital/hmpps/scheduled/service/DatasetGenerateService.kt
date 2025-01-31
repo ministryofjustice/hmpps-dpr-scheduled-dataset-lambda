@@ -25,7 +25,6 @@ data class RedshiftProperties(
 class DatasetGenerateService (
   private val redshiftDataClient: RedshiftDataClient,
   private val redshiftProperties: RedshiftProperties,
-  private val eventBridge: EventBridge,
   private val redshiftStatementStatusService: RedshiftStatementStatusService = RedshiftStatementStatusService(redshiftDataClient, redshiftProperties),
 ) {
 
@@ -40,11 +39,7 @@ class DatasetGenerateService (
     logger.log("attempting to execute final query " + finalQuery)
 
     val response = executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
-    val status = this.redshiftStatementStatusService.andWait(response, logger)
-    if (status == ExecutionStatus.SUBMITTED) {
-        //if its not completed yet send to event bridge
-        eventBridge.send(response, logger)
-    }
+    redshiftStatementStatusService.andWait(response, logger)
     return response
   }
 

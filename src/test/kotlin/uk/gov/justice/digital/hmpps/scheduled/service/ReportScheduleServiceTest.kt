@@ -15,15 +15,12 @@ class ReportScheduleServiceTest {
 
   val dynamoDBRepository = mock<DynamoDBRepository>()
   val datasetGenerateService = mock<DatasetGenerateService>()
-  val eventBridge = mock<EventBridge>()
-  val redshiftStatementStatusService = mock<RedshiftStatementStatusService>()
 
   val asOfDate = LocalDateTime.of(2024,12,9, 10,0,0)
 
   val reportScheduleService = ReportScheduleService(
     dynamoDBRepository = dynamoDBRepository,
     datasetGenerateService = datasetGenerateService,
-    eventBridge = eventBridge,
     clock = Clock.fixed(asOfDate.toInstant(ZoneOffset.UTC), ZoneId.systemDefault())
   )
 

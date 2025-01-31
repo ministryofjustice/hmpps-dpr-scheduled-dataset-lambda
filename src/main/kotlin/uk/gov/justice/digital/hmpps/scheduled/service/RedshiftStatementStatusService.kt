@@ -6,7 +6,6 @@ import software.amazon.awssdk.services.redshiftdata.model.DescribeStatementReque
 import software.amazon.awssdk.services.redshiftdata.model.DescribeStatementResponse
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementRequest
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementResponse
-import uk.gov.justice.digital.hmpps.scheduled.lambda.EventBridgeEvent
 import java.time.LocalDateTime
 
 class StatementExecutionException(val error: String) : RuntimeException(error)
@@ -40,19 +39,6 @@ class RedshiftStatementStatusService (
       updated_at datetime,
       primary key(id));
     """
-  }
-
-  fun processEvent(event: EventBridgeEvent, logger: LambdaLogger) {
-
-    if (event.detailType == "RedShiftStatementResponse") {
-      val response = event.toStatementExecutionResponse()
-      //immediately check here now
-      checkExecutionStatus(response.executionId, logger)
-      //submitStatusResponse(response, logger)
-
-    } else {
-      logger.log("received unexpected event type $event")
-    }
   }
 
   fun insertWithError(response: StatementExecutionResponse, status: ExecutionStatus, error: String): String {
@@ -123,7 +109,6 @@ class RedshiftStatementStatusService (
           isQueryStillRunning = false
         }
         QUERY_STARTED -> {
-            //DO NOTHING KEEP GOING
           val now = LocalDateTime.now()
           if (now.isAfter(startTime)) {
             return latestStatus
@@ -139,14 +124,12 @@ class RedshiftStatementStatusService (
   }
 
   fun checkExecutionStatus(statementId: String, logger: LambdaLogger): DescribeStatementResponse {
-    //logger.log("checking statement id $statementId")
     val statementRequest = DescribeStatementRequest.builder()
       .id(statementId)
       .build()
 
     val describeStatementResponse = redshiftDataClient.describeStatement(statementRequest)
 
-    //logger.log("execution status response $describeStatementResponse")
     return describeStatementResponse
   }
 
@@ -160,9 +143,4 @@ class RedshiftStatementStatusService (
 
     return redshiftDataClient.executeStatement(statementRequest)
   }
-
-  fun EventBridgeEvent.toStatementExecutionResponse() = StatementExecutionResponse(
-    tableId = this.detail["tableId"] as String,
-    executionId = this.detail["executionId"] as String,
-  )
 }

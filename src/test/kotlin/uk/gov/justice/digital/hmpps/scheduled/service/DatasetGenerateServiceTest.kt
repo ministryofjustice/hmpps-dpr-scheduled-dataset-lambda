@@ -25,8 +25,7 @@ class DatasetGenerateServiceTest {
 
   val datasetGenerateService = DatasetGenerateService(
     redshiftDataClient,
-    redshiftProperties,
-    eventBridge
+    redshiftProperties
   )
 
   @Test

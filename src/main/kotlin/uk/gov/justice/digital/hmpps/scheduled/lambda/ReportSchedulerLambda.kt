@@ -13,9 +13,7 @@ import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDbProductDefinitionPr
 import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.service.DatasetGenerateService
 import uk.gov.justice.digital.hmpps.scheduled.service.RedshiftProperties
-import uk.gov.justice.digital.hmpps.scheduled.service.RedshiftStatementStatusService
 import uk.gov.justice.digital.hmpps.scheduled.service.ReportScheduleService
-
 
 class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
 
@@ -37,20 +35,14 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       redshiftDataApiSecretArn = System.getenv("CREDENTIAL_SECRET_ARN"),
     )
 
-    val eventBridgeClient = EventBridgeClient.builder()
-      .region(Region.EU_WEST_2)
-      .build()
-
     val datasetGenerateService = DatasetGenerateService(
       redshiftDataClient = redshiftDataClient,
       redshiftProperties = redshiftProperties,
-      eventBridge = EventBridge(eventBridgeClient),
     )
 
     reportSchedulingService = ReportScheduleService(
       dynamoDBRepository,
       datasetGenerateService,
-      EventBridge(eventBridgeClient),
     )
   }
 
@@ -61,9 +53,9 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       logger.log("Started report scheduler", LogLevel.INFO)
 
       logger.log("Received event $payload", LogLevel.INFO)
-      //reportSchedulingService!!.processProductDefinitions(logger)
-      reportSchedulingService!!.testRun(logger)
-      //reportSchedulingService!!.testEventBridge(logger)
+      reportSchedulingService!!.processProductDefinitions(logger)
+      //reportSchedulingService!!.testRun(logger)
+
       logger.log("Finished report scheduler", LogLevel.INFO)
     }
 
