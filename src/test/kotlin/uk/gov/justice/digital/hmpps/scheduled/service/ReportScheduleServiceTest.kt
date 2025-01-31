@@ -4,8 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
-import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
-import uk.gov.justice.digital.hmpps.scheduled.model.*
+import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneId

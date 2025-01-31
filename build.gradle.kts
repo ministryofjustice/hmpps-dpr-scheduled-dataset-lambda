@@ -21,7 +21,6 @@ dependencies {
 
   implementation("software.amazon.awssdk:redshiftdata:2.29.20")
   implementation("software.amazon.awssdk:dynamodb:2.29.20")
-  implementation("software.amazon.awssdk:eventbridge:2.29.20")
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")

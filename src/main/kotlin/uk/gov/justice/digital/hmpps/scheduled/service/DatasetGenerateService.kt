@@ -4,7 +4,6 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementRequest
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementResponse
-import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
 import uk.gov.justice.digital.hmpps.scheduled.model.ExternalTableId

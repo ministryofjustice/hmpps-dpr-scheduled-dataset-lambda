@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.scheduled.service
 import com.amazonaws.services.lambda.runtime.LambdaLogger
 import org.quartz.CronExpression
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
-import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.model.Dataset
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import uk.gov.justice.digital.hmpps.scheduled.model.ProductDefinition
