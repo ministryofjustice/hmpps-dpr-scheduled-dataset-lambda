@@ -38,7 +38,7 @@ class DatasetGenerateService (
     logger.log("attempting to execute final query " + finalQuery)
 
     val response = executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
-    redshiftStatementStatusService.andWait(response, logger)
+    redshiftStatementStatusService.andWaitToStart(response, logger)
     return response
   }
 

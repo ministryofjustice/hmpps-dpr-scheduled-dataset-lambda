@@ -69,10 +69,10 @@ class RedshiftStatementStatusService (
     logger.log("got statement response from create and run ${statementResponse}")
   }
 
-  fun andWait(response: StatementExecutionResponse, logger: LambdaLogger): ExecutionStatus {
+  fun andWaitToStart(response: StatementExecutionResponse, logger: LambdaLogger): ExecutionStatus {
 
     try {
-      if (waitForQueryToComplete(response.executionId, logger) == QUERY_STARTED) {
+      if (waitForQueryToStart(response.executionId, logger) == QUERY_STARTED) {
         //no error yet timed out but still processing
         submitStatusResponse(response, ExecutionStatus.SUBMITTED, null, logger)
         return ExecutionStatus.SUBMITTED
@@ -91,7 +91,7 @@ class RedshiftStatementStatusService (
     }
   }
 
-  fun waitForQueryToComplete(executionId: String, logger: LambdaLogger): String {
+  fun waitForQueryToStart(executionId: String, logger: LambdaLogger): String {
     var isQueryStillRunning = true
     var latestStatus = ""
     val startTime = LocalDateTime.now().plusSeconds(TIME_OUT_SECS)

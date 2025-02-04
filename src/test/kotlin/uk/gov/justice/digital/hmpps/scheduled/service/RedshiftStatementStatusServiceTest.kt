@@ -50,7 +50,7 @@ class RedshiftStatementStatusServiceTest{
     whenever(redshiftDataClient.describeStatement(any<DescribeStatementRequest>())).doReturn(describeResponse)
 
     val exception = assertThrows<StatementExecutionException>{
-      redshiftStatementStatusService.waitForQueryToComplete(execId, logger)
+      redshiftStatementStatusService.waitForQueryToStart(execId, logger)
     }
 
     assertEquals(exception.error, "Query Failed to run with Error Message: $error")
@@ -68,7 +68,7 @@ class RedshiftStatementStatusServiceTest{
     whenever(redshiftDataClient.describeStatement(any<DescribeStatementRequest>())).doReturn(describeResponse)
 
     val exception = assertThrows<StatementExecutionException>{
-      redshiftStatementStatusService.waitForQueryToComplete(execId, logger)
+      redshiftStatementStatusService.waitForQueryToStart(execId, logger)
     }
 
     assertEquals(exception.error, "Query was cancelled.")
@@ -85,7 +85,7 @@ class RedshiftStatementStatusServiceTest{
 
     whenever(redshiftDataClient.describeStatement(any<DescribeStatementRequest>())).doReturn(describeResponse)
 
-    val actual = redshiftStatementStatusService.waitForQueryToComplete(execId, logger)
+    val actual = redshiftStatementStatusService.waitForQueryToStart(execId, logger)
 
     assertEquals(actual, QUERY_FINISHED)
   }
