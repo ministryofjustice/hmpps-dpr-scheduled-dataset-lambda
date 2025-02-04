@@ -22,7 +22,7 @@ class RedshiftStatementStatusService (
 ) {
   companion object {
     const val WAIT_TIME = 500L
-    const val TIME_OUT_SECS = 120L
+    const val TIME_OUT_SECS = 5L
     const val QUERY_STARTED = "STARTED"
     const val QUERY_FINISHED = "FINISHED"
     const val QUERY_ABORTED = "ABORTED"
