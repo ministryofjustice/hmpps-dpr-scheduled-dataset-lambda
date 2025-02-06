@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.scheduled.service
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito.mock
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
@@ -13,6 +13,7 @@ import java.util.*
 class DatasetGenerateServiceTest {
 
   val redshiftDataClient = mock<RedshiftDataClient>()
+
   val redshiftProperties = RedshiftProperties(
     s3location = "dpr-working-development/reports",
     redshiftDataApiDb = "dpr-product-definitions",

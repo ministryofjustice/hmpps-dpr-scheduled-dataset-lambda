@@ -24,6 +24,7 @@ data class RedshiftProperties(
 class DatasetGenerateService (
   private val redshiftDataClient: RedshiftDataClient,
   private val redshiftProperties: RedshiftProperties,
+  private val redshiftStatementStatusService: RedshiftStatementStatusService = RedshiftStatementStatusService(redshiftDataClient, redshiftProperties),
 ) {
 
   companion object {
@@ -31,6 +32,17 @@ class DatasetGenerateService (
   }
 
   fun generateDataset(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
+    val tableId = datasetWithReport.generateNewExternalTableId()
+    logger.log("generated tableId " + tableId)
+    val finalQuery = generateFinalQuery(tableId, datasetWithReport.dataset.query)
+    logger.log("attempting to execute final query " + finalQuery)
+
+    val response = executeQueryAsync(datasetWithReport.datasource, tableId, finalQuery)
+    redshiftStatementStatusService.andWaitToStart(response, logger)
+    return response
+  }
+
+  fun generateDatasetAsync(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
     val tableId = datasetWithReport.generateNewExternalTableId()
     logger.log("generated tableId " + tableId)
     val finalQuery = generateFinalQuery(tableId, datasetWithReport.dataset.query)

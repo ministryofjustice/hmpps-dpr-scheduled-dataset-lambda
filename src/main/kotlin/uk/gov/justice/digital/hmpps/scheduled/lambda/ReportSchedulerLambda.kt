@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.scheduled.lambda
 
-
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.logging.LogLevel
@@ -26,13 +25,16 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       dynamoDbClient = dynamoDbClient,
     )
 
+    val redshiftDataClient = RedshiftDataClient.builder().region(Region.EU_WEST_2).build()
+    val redshiftProperties = RedshiftProperties(
+      redshiftDataApiClusterId = System.getenv("CLUSTER_ID"),
+      redshiftDataApiDb = System.getenv("DB_NAME"),
+      redshiftDataApiSecretArn = System.getenv("CREDENTIAL_SECRET_ARN"),
+    )
+
     val datasetGenerateService = DatasetGenerateService(
-      redshiftDataClient = RedshiftDataClient.builder().region(Region.EU_WEST_2).build(),
-      redshiftProperties = RedshiftProperties(
-        redshiftDataApiClusterId = System.getenv("CLUSTER_ID"),
-        redshiftDataApiDb = System.getenv("DB_NAME"),
-        redshiftDataApiSecretArn = System.getenv("CREDENTIAL_SECRET_ARN"),
-      ),
+      redshiftDataClient = redshiftDataClient,
+      redshiftProperties = redshiftProperties,
     )
 
     reportSchedulingService = ReportScheduleService(
@@ -41,12 +43,13 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
     )
   }
 
-  override fun handleRequest(input: MutableMap<String, Any>?, context: Context?): String {
+  override fun handleRequest(payload: MutableMap<String, Any>, context: Context?): String {
 
     if (context != null) {
       val logger = context.logger
       logger.log("Started report scheduler", LogLevel.INFO)
 
+      logger.log("Received event $payload", LogLevel.INFO)
       reportSchedulingService!!.processProductDefinitions(logger)
       //reportSchedulingService!!.testRun(logger)
 

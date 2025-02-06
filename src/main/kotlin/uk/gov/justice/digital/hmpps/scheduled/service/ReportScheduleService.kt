@@ -64,7 +64,9 @@ class ReportScheduleService(
       val flattenDataSet = flattenDataset(productDefinition, productDefinition.dataset).first()
       logger.log("atttempting to generate dataset for " + flattenDataSet)
       val response = datasetGenerateService.generateDataset(flattenDataSet, logger)
+
       logger.log("got statement response " + response)
+
     }
 
     //SCHEDULE
