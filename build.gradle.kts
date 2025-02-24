@@ -25,7 +25,7 @@ dependencies {
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
-  testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.1")
+  testImplementation("org.junit.jupiter:junit-jupiter-params:5.12.0")
 
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.1")
 }
