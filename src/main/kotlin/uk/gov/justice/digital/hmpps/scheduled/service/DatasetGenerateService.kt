@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.scheduled.service
 
 import com.amazonaws.services.lambda.runtime.LambdaLogger
+import com.amazonaws.services.lambda.runtime.logging.LogLevel
+import com.google.gson.Gson
 import software.amazon.awssdk.services.redshiftdata.RedshiftDataClient
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementRequest
 import software.amazon.awssdk.services.redshiftdata.model.ExecuteStatementResponse
-import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
-import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
-import uk.gov.justice.digital.hmpps.scheduled.model.ExternalTableId
-import uk.gov.justice.digital.hmpps.scheduled.model.generateNewExternalTableId
+import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
+import uk.gov.justice.digital.hmpps.scheduled.model.*
 
 data class StatementExecutionResponse(
   val tableId: String,
@@ -25,15 +25,42 @@ class DatasetGenerateService (
   private val redshiftDataClient: RedshiftDataClient,
   private val redshiftProperties: RedshiftProperties,
   private val redshiftStatementStatusService: RedshiftStatementStatusService = RedshiftStatementStatusService(redshiftDataClient, redshiftProperties),
+  private val productDefinitionService:  ProductDefinitionService,
 ) {
 
   companion object {
     const val DATASET_ = """dataset_"""
   }
 
+  fun processEvent(event: EventBridgeEvent, logger: LambdaLogger) {
+    if (event.detailType == EventBridge.RULE_DETAIL_TYPE_DATASET) {
+      val datasetEvent = event.toDatasetEvent()
+
+      productDefinitionService.findReportById(datasetEvent.productDefinitionId, datasetEvent.category, logger)?.let { productDef ->
+        //filter only applicable dataset
+        filterDataset(productDef, datasetEvent.datasetId)
+          ?.let {
+            generateDataset(it, logger)
+        } ?: logger.log("unable to find dataset ${datasetEvent.datasetId} for product definition ${datasetEvent.productDefinitionId} ", LogLevel.ERROR)
+      } ?: logger.log("unable to find product definition ${datasetEvent.productDefinitionId} ", LogLevel.ERROR)
+    } else {
+      logger.log("received unexpected event type $event", LogLevel.ERROR)
+    }
+  }
+
+  fun filterDataset(productDefinition: ProductDefinitionWithCategory, datasetId: String): DatasetWithReport? {
+
+    val dataSet = productDefinition.definition.dataset
+      .find { entity -> entity.id == datasetId}
+
+    return dataSet?.let { foundDataset ->
+      productDefinitionService.flattenDataset(productDefinition, listOf(dataSet)).first()
+    }
+  }
+
   fun generateDataset(datasetWithReport: DatasetWithReport, logger: LambdaLogger): StatementExecutionResponse {
     val tableId = datasetWithReport.generateNewExternalTableId()
-    logger.log("generated tableId " + tableId)
+    logger.log("generated tableId " + tableId.id)
     val finalQuery = generateFinalQuery(tableId, datasetWithReport.dataset.query)
     logger.log("attempting to execute final query " + finalQuery)
 
@@ -83,7 +110,7 @@ class DatasetGenerateService (
     return StatementExecutionResponse(tableId.id, response.id())
   }
 
-  protected fun buildFinalQuery(
+  private fun buildFinalQuery(
     datasetQuery: String
   ): String {
     val query = listOf(datasetQuery, ).joinToString(",")
@@ -92,4 +119,10 @@ class DatasetGenerateService (
 
   fun buildDatasetQuery(query: String) = """WITH $DATASET_ AS ($query) SELECT * FROM $DATASET_"""
 
+  private fun EventBridgeEvent.toDatasetEvent(): DatasetGenerateEvent =
+    DatasetGenerateEvent(
+      datasetId = this.detail["datasetId"] as String,
+      productDefinitionId = this.detail["productDefinitionId"] as String,
+      category =  this.detail["category"] as String,
+    )
 }

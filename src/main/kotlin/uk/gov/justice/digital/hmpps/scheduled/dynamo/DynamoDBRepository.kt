@@ -4,8 +4,11 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger
 import com.google.gson.Gson
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest
 import uk.gov.justice.digital.hmpps.scheduled.model.ProductDefinition
+import uk.gov.justice.digital.hmpps.scheduled.model.ProductDefinitionWithCategory
 
 class DynamoDBRepository(
   private val dynamoDbClient: DynamoDbClient,
@@ -13,7 +16,30 @@ class DynamoDBRepository(
   private val gson: Gson = Gson(),
 ) {
 
-  fun findReportsWithSchedule(logger: LambdaLogger): List<ProductDefinition> {
+  fun findReportById(reportId: String, categoryId: String, logger: LambdaLogger): ProductDefinitionWithCategory? {
+
+    logger.log("attempting to find report by id $reportId")
+
+    val itemRequest = GetItemRequest.builder()
+      .tableName(properties.tableName)
+      .key(
+        mapOf(
+          properties.idFieldName to AttributeValue.fromS(reportId),
+          properties.categoryFieldName to AttributeValue.fromS(categoryId)
+        ),
+      ).build()
+
+    val response = dynamoDbClient.getItem(itemRequest)
+
+    return response?.let{
+      ProductDefinitionWithCategory(
+        definition = gson.fromJson(it.item()[properties.definitionFieldName]!!.s(), ProductDefinition::class.java),
+        category = it.item()[properties.categoryFieldName]!!.s()
+      )
+    }
+  }
+
+  fun findReportsWithSchedule(logger: LambdaLogger): List<ProductDefinitionWithCategory> {
 
     val results = doQuery(
       logger = logger
@@ -21,7 +47,10 @@ class DynamoDBRepository(
     return results
       .map {
         it.log(logger)
-        gson.fromJson(it[properties.definitionFieldName]!!.s(), ProductDefinition::class.java)
+        ProductDefinitionWithCategory(
+          definition =  gson.fromJson(it[properties.definitionFieldName]!!.s(), ProductDefinition::class.java),
+          category = it[properties.categoryFieldName]!!.s()
+        )
       }
   }
 
@@ -69,6 +98,5 @@ class DynamoDBRepository(
 
   fun Map<String, AttributeValue>.log(logger: LambdaLogger) {
     logger.log("found id:=" + this[properties.idFieldName] + ", category=" + this[properties.categoryFieldName] +  ", fileName=" + this[properties.fileNameFieldName])
-
   }
 }

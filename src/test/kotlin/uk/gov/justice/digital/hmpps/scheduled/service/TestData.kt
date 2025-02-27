@@ -1,9 +1,6 @@
 package uk.gov.justice.digital.hmpps.scheduled.service
 
-import uk.gov.justice.digital.hmpps.scheduled.model.Dataset
-import uk.gov.justice.digital.hmpps.scheduled.model.Datasource
-import uk.gov.justice.digital.hmpps.scheduled.model.ProductDefinition
-import uk.gov.justice.digital.hmpps.scheduled.model.Report
+import uk.gov.justice.digital.hmpps.scheduled.model.*
 import java.util.*
 
 val scheduledDataset = Dataset(
@@ -61,7 +58,9 @@ val datasource = Datasource(
   database = "DIGITAL_PRISON_REPORTING",
   catalog = "nomis"
 )
-val productDefinition = ProductDefinition(
+val productDefinition = ProductDefinitionWithCategory(
+  category = "prod",
+  definition = ProductDefinition(
   id = "123",
   name = "testReport",
   datasource = listOf(
@@ -77,4 +76,5 @@ val productDefinition = ProductDefinition(
     report2,
     report3
   )
+)
 )
