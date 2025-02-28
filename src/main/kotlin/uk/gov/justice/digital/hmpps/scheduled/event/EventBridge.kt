@@ -17,7 +17,7 @@ class EventBridge(
     const val RULE_SOURCE = "uk.gov.justice.digital.hmpps.scheduled.lambda.ReportSchedulerLambda"
     const val RULE_DETAIL_TYPE_DATASET = "RedshiftDatasetGenerate"
     const val RULE_NAME = "dpr-dataset-scheduled-test-rule"
-    const val EVENT_BUS_NAME = "dpr-event-bus-test"
+    const val EVENT_BUS_NAME = "dpr-event-bus"
     const val TARGET_LAMBDA_ARN = "arn:aws:lambda:eu-west-2:771283872747:function:dpr-generate-dataset-function-test"
   }
 
