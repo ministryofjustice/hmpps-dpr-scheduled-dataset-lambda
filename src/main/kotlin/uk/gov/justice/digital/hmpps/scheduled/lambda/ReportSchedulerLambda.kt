@@ -49,9 +49,8 @@ class ReportSchedulerLambda : RequestHandler<MutableMap<String, Any>, String> {
       logger.log("Started report scheduler", LogLevel.INFO)
 
       logger.log("Received event $payload", LogLevel.INFO)
-      //reportSchedulingService!!.processProductDefinitions(logger)
-      //reportSchedulingService!!.testRun(logger)
-      reportSchedulingService!!.testSendEvent(logger)
+      reportSchedulingService!!.processProductDefinitions(logger)
+      //reportSchedulingService!!.testSendEvent(logger)
 
       logger.log("Finished report scheduler", LogLevel.INFO)
     }

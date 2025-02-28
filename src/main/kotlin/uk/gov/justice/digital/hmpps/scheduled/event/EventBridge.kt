@@ -16,9 +16,7 @@ class EventBridge(
   companion object {
     const val RULE_SOURCE = "uk.gov.justice.digital.hmpps.scheduled.lambda.ReportSchedulerLambda"
     const val RULE_DETAIL_TYPE_DATASET = "RedshiftDatasetGenerate"
-    const val RULE_NAME = "dpr-dataset-scheduled-test-rule"
     const val EVENT_BUS_NAME = "dpr-event-bus"
-    const val TARGET_LAMBDA_ARN = "arn:aws:lambda:eu-west-2:771283872747:function:dpr-generate-dataset-function-test"
   }
 
   fun sendDatasetEvent(event: DatasetGenerateEvent, logger: LambdaLogger) {
@@ -42,53 +40,4 @@ class EventBridge(
     logger.log("event response $eventResponse")
   }
 
-  fun createRule(logger: LambdaLogger) {
-
-    val eventRule = """{
-      "source": ["$RULE_SOURCE"],
-      "detail-type": ["$RULE_DETAIL_TYPE_DATASET"]
-      }
-    """.trimIndent()
-
-    val ruleRequest = PutRuleRequest.builder()
-      .name(RULE_NAME)
-      .eventBusName(EVENT_BUS_NAME)
-      .eventPattern(eventRule)
-      .description("A test rule to route events to another lambda")
-      .build()
-
-    val ruleResponse: PutRuleResponse = eventBridgeClient.putRule(ruleRequest)
-    logger.log("rule response $ruleResponse")
-
-    val lambdaArn = TARGET_LAMBDA_ARN
-    val lambdaTarget = Target.builder()
-      .arn(lambdaArn)
-      .id("targetId")
-      .build()
-
-    val targetsRequest: PutTargetsRequest = PutTargetsRequest.builder()
-      .eventBusName(EVENT_BUS_NAME)
-      .rule(RULE_NAME)
-      .targets(lambdaTarget)
-      .build()
-
-    eventBridgeClient.putTargets(targetsRequest)
-  }
-
-  fun listBuses(logger: LambdaLogger) {
-    try {
-      val busesRequest = ListEventBusesRequest.builder()
-        .limit(10)
-        .build()
-
-      val response: ListEventBusesResponse = eventBridgeClient.listEventBuses(busesRequest)
-      val buses: List<EventBus> = response.eventBuses()
-      for (bus in buses) {
-        logger.log("The name of the event bus is: " + bus.name())
-        logger.log("The ARN of the event bus is: " + bus.arn())
-      }
-    } catch (e: EventBridgeException) {
-      logger.log(e.awsErrorDetails().errorMessage())
-    }
-  }
 }
