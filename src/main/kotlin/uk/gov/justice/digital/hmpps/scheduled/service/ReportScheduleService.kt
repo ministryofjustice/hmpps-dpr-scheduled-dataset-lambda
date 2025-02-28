@@ -3,19 +3,17 @@ package uk.gov.justice.digital.hmpps.scheduled.service
 import com.amazonaws.services.lambda.runtime.LambdaLogger
 import org.quartz.CronExpression
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
-import uk.gov.justice.digital.hmpps.scheduled.model.Dataset
-import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
-import uk.gov.justice.digital.hmpps.scheduled.model.ProductDefinition
-import uk.gov.justice.digital.hmpps.scheduled.model.hasSchedule
+import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
+import uk.gov.justice.digital.hmpps.scheduled.model.*
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
 class ReportScheduleService(
-  private val dynamoDBRepository: DynamoDBRepository,
-  private val datasetGenerateService: DatasetGenerateService,
+  private val productDefinitionService: ProductDefinitionService,
   private val clock: Clock = Clock.systemDefaultZone(),
+  private val eventBridge: EventBridge
 ) {
   companion object {
     const val SCHEMA_REF_PREFIX = "\$ref:"
@@ -23,7 +21,7 @@ class ReportScheduleService(
 
   fun processProductDefinitions(logger: LambdaLogger) {
     //FIND
-    val productDefinitions = dynamoDBRepository.findReportsWithSchedule(logger)
+    val productDefinitions = productDefinitionService.findReportsWithSchedule(logger)
     logger.log("found product definitions " + productDefinitions.size)
 
     if (productDefinitions.isNotEmpty()) {
@@ -35,8 +33,15 @@ class ReportScheduleService(
       //GENERATE data sets
       scheduledDataSet.map { scheduled ->
         if (scheduled.dataset.datasource == "datamart") {
-          val response = datasetGenerateService.generateDataset(scheduled, logger)
-          logger.log("definition ${scheduled.productDefinitionId},  dataset ${scheduled.dataset.id}, got statement response " + response)
+
+          val event = DatasetGenerateEvent(
+            datasetId = scheduled.dataset.id,
+            productDefinitionId = scheduled.productDefinitionId,
+            category = scheduled.category
+          )
+
+          logger.log("attempting to send dataset event " + event)
+          eventBridge.sendDatasetEvent(event, logger)
         } else {
           logger.log("definition ${scheduled.productDefinitionId},  dataset ${scheduled.dataset.id}, has datasource ${scheduled.dataset.datasource} not currently supported")
         }
@@ -44,62 +49,45 @@ class ReportScheduleService(
     }
   }
 
-  /*
-   * using this for testing dataset generation, will remove once finalised
-   */
-  fun testRun(logger: LambdaLogger) {
+  fun testSendEvent(logger: LambdaLogger) {
 
-    //FIND
-    val productDefinitions = dynamoDBRepository.findReportsWithSchedule(logger)
+    //create rule
+    //eventBridge.createRule(logger)
+
+    val productDefinitions = productDefinitionService.findReportsWithSchedule(logger)
     logger.log("found definitions " + productDefinitions.size)
 
     if (productDefinitions.isNotEmpty()) {
       productDefinitions.map { productDefinition ->
-        logger.log("found definitions id " + productDefinition.id + ", report name= " + productDefinition.name + ", datasource=" + productDefinition.datasource)
+        logger.log("found definitions id " + productDefinition.definition.id + ", report name= " + productDefinition.definition.name + ", datasource=" + productDefinition.definition.datasource)
       }
 
       //test PROCESS first one
       val productDefinition = productDefinitions.first()
 
-      val flattenDataSet = flattenDataset(productDefinition, productDefinition.dataset).first()
-      logger.log("atttempting to generate dataset for " + flattenDataSet)
-      val response = datasetGenerateService.generateDataset(flattenDataSet, logger)
+      val flattenDataSet = productDefinitionService.flattenDataset(productDefinition, productDefinition.definition.dataset).first()
 
-      logger.log("got statement response " + response)
+      val event = DatasetGenerateEvent(
+        datasetId = flattenDataSet.dataset.id,
+        productDefinitionId = flattenDataSet.productDefinitionId,
+        category = flattenDataSet.category
+      )
 
+      logger.log("atttempting to send dataset event " + event)
+      eventBridge.sendDatasetEvent(event, logger)
     }
-
-    //SCHEDULE
-    val scheduled = extractDatasetsToBeScheduled(productDefinitions)
-    logger.log("following datasets due to be scheduled " + scheduled)
   }
 
-  fun extractDatasetsToBeScheduled(productDefs: List<ProductDefinition>): List<DatasetWithReport> {
+  fun extractDatasetsToBeScheduled(productDefs: List<ProductDefinitionWithCategory>): List<DatasetWithReport> {
     return productDefs.map { filterDatasetToBeScheduled(it) }.flatMap { it }
   }
 
-  fun flattenDataset(productDefinition: ProductDefinition, datasets: List<Dataset>): List<DatasetWithReport> {
+  fun filterDatasetToBeScheduled(productDefinition: ProductDefinitionWithCategory): List<DatasetWithReport> {
 
-    val reportToDataSet = productDefinition.report.map { report ->
-      Pair(report.dataset.removePrefix(SCHEMA_REF_PREFIX), report)
-    }.toMap()
-
-    return datasets.map { dataset ->
-      DatasetWithReport(
-        dataset = dataset,
-        report = reportToDataSet.get(dataset.id),
-        productDefinitionId = productDefinition.id,
-        datasource = productDefinition.datasource.first(),
-      )
-    }
-  }
-
-  fun filterDatasetToBeScheduled(productDefinition: ProductDefinition): List<DatasetWithReport> {
-
-    val dataSets = productDefinition.dataset
+    val dataSets = productDefinition.definition.dataset
       .filter { entity -> entity.hasSchedule() && shouldBeScheduled(entity.schedule!!) }
 
-    return flattenDataset(productDefinition, dataSets)
+    return productDefinitionService.flattenDataset(productDefinition, dataSets)
   }
 
   fun shouldBeScheduled(schedule: String): Boolean {

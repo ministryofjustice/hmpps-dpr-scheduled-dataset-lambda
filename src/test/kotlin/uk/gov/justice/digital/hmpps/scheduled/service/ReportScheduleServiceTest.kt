@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import uk.gov.justice.digital.hmpps.scheduled.dynamo.DynamoDBRepository
+import uk.gov.justice.digital.hmpps.scheduled.event.EventBridge
 import uk.gov.justice.digital.hmpps.scheduled.model.DatasetWithReport
 import java.time.Clock
 import java.time.LocalDateTime
@@ -12,14 +13,16 @@ import java.time.ZoneOffset
 
 class ReportScheduleServiceTest {
 
-  val dynamoDBRepository = mock<DynamoDBRepository>()
-  val datasetGenerateService = mock<DatasetGenerateService>()
-
+  val dynamoDBRepository =  mock<DynamoDBRepository>()
+  val productDefinitionService = ProductDefinitionService(
+    dynamoDBRepository
+  )
+  val eventBridge = mock<EventBridge>()
   val asOfDate = LocalDateTime.of(2024,12,9, 10,0,0)
 
   val reportScheduleService = ReportScheduleService(
-    dynamoDBRepository = dynamoDBRepository,
-    datasetGenerateService = datasetGenerateService,
+    productDefinitionService = productDefinitionService,
+    eventBridge = eventBridge,
     clock = Clock.fixed(asOfDate.toInstant(ZoneOffset.UTC), ZoneId.systemDefault())
   )
 
@@ -30,13 +33,13 @@ class ReportScheduleServiceTest {
 
     val expected = listOf(
       DatasetWithReport(
+        category = "prod",
         dataset = scheduledDataset,
         datasource = datasource,
-        productDefinitionId = productDefinition.id,
+        productDefinitionId = productDefinition.definition.id,
         report = reportWithUUID
       )
     )
-
     assertEquals(expected, datasets)
   }
 

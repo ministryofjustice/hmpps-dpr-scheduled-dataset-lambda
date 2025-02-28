@@ -36,9 +36,15 @@ data class ProductDefinition(
   val report: List<Report> = emptyList(),
 )
 
+data class ProductDefinitionWithCategory(
+  val definition: ProductDefinition,
+  val category: String
+)
+
 data class DatasetWithReport(
   val dataset: Dataset,
   val productDefinitionId: String,
+  val category: String,
   val report: Report?,
   val datasource: Datasource,
 )
