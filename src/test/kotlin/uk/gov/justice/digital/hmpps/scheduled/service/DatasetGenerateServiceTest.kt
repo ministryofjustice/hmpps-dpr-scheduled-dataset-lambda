@@ -13,6 +13,7 @@ import java.util.*
 class DatasetGenerateServiceTest {
 
   val redshiftDataClient = mock<RedshiftDataClient>()
+  val productDefinitionService = mock<ProductDefinitionService>()
 
   val redshiftProperties = RedshiftProperties(
     s3location = "dpr-working-development/reports",
@@ -23,16 +24,18 @@ class DatasetGenerateServiceTest {
 
   val datasetGenerateService = DatasetGenerateService(
     redshiftDataClient,
-    redshiftProperties
+    redshiftProperties,
+    productDefinitionService = productDefinitionService
   )
 
   @Test
   fun `Find generate table id based on simple product definition id and dataset id`() {
 
     val dataSet = DatasetWithReport(
+      category = "prod",
       dataset = scheduledDataset,
       datasource = datasource,
-      productDefinitionId = productDefinition.id,
+      productDefinitionId = productDefinition.definition.id,
       report = reportWithUUID
     )
 
@@ -52,9 +55,10 @@ class DatasetGenerateServiceTest {
   fun `generate table id based on UUIDs product definition id and dataset id`() {
 
     val dataSet = DatasetWithReport(
+      category = "prod",
       dataset = datasestWithUUID(UUID.fromString("778456ed-448e-4501-8818-38947ba64406")),
       datasource = datasource,
-      productDefinitionId = productDefinition.id,
+      productDefinitionId = productDefinition.definition.id,
       report = reportWithUUID
     )
 
