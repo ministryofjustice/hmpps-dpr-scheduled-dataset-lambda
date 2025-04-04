@@ -22,6 +22,11 @@ dependencies {
   implementation("software.amazon.awssdk:redshiftdata:2.29.20")
   implementation("software.amazon.awssdk:dynamodb:2.29.20")
   implementation("software.amazon.awssdk:eventbridge:2.29.20")
+  implementation("software.amazon.awssdk:athena:2.31.3")
+  implementation("org.springframework:spring-jdbc:6.2.5")
+  implementation("org.springframework.boot:spring-boot-starter-jdbc:3.4.4")
+  implementation("com.amazon.redshift:redshift-jdbc42:2.1.0.32")
+
 
   // Testing
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
