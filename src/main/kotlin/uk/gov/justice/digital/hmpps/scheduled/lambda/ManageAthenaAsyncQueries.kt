@@ -26,34 +26,28 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
           val redshiftClient = RedshiftDataClient.builder()
               .region(Region.EU_WEST_2)
               .build()
-//          val dataSource = DataSourceBuilder.create()
-//              .url("")
-//              .username("")
-//              .password("")
-//              .driverClassName("")
-//              .build()
-//          val jdbcTemplate = NamedParameterJdbcTemplate(dataSource)
-//          val mapSqlParameterSource = mutableMapOf("" to "")
-//          val result = jdbcTemplate
-//              .queryForList(
-//                  "SELECT * FROM datamart.admin.execution_manager;",
-//                  MapSqlParameterSource(mapSqlParameterSource),
-//              )
-//          logger.log("Retrieved ${result.size} results from admin table.", LogLevel.INFO)
-              val athenaClient: AthenaClient = AthenaClient.builder()
-                  .region(Region.EU_WEST_2)
-                  .build()
+          val adminQuery = "SELECT * FROM datamart.admin.execution_manager;"
+          val getStatementResultResponse = queryRedshift("datamart", adminQuery, redshiftClient, logger)
+          val database = getData("database", 0, getStatementResultResponse)
+          logger.log("The database from the admin table is: $database", LogLevel.INFO)
+          val catalog = getData("catalog", 0, getStatementResultResponse)
+          logger.log("The catalog from the admin table is: $catalog", LogLevel.INFO)
+          val query = getData("query", 0, getStatementResultResponse)
+          logger.log("Retrieved ${getStatementResultResponse.records()} results from admin table.", LogLevel.INFO)
+//              val athenaClient: AthenaClient = AthenaClient.builder()
+//                  .region(Region.EU_WEST_2)
+//                  .build()
 //              val database = result[0]["database"] as String
 //              val catalog = result[0]["catalog"] as String
 //              val query = result[0]["query"] as String
-              val database = "DIGITAL_PRISON_REPORTING"
-              val catalog = "nomis"
-              val query = "SELECT agy_loc_id FROM OMS_OWNER.LIVING_UNITS limit 10;"
+//              val database = "DIGITAL_PRISON_REPORTING"
+//              val catalog = "nomis"
+//              val query = "SELECT agy_loc_id FROM OMS_OWNER.LIVING_UNITS limit 10;"
               logger.log("The query from the admin table is: $query", LogLevel.INFO)
-              val queryExecutionContext = QueryExecutionContext.builder()
-                  .database(database)
-                  .catalog(catalog)
-                  .build()
+//              val queryExecutionContext = QueryExecutionContext.builder()
+//                  .database(database)
+//                  .catalog(catalog)
+//                  .build()
               /*
               """
                       CREATE TABLE AwsDataCatalog.reports.testingeventbridge
@@ -66,16 +60,16 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
                       )))
             """.trimIndent()
             */
-          val startQueryExecutionRequest = StartQueryExecutionRequest.builder()
-              .queryString(query)
-              .queryExecutionContext(queryExecutionContext)
-              .workGroup("dpr-generic-athena-workgroup")
-              .build()
-          logger.log("Full async query: $query", LogLevel.INFO)
-          val queryExecutionId = athenaClient
-              .startQueryExecution(startQueryExecutionRequest).queryExecutionId()
-          logger.log("Query execution ID: $queryExecutionId", LogLevel.INFO)
-          return queryExecutionId
+//          val startQueryExecutionRequest = StartQueryExecutionRequest.builder()
+//              .queryString(query)
+//              .queryExecutionContext(queryExecutionContext)
+//              .workGroup("dpr-generic-athena-workgroup")
+//              .build()
+//          logger.log("Full async query: $query", LogLevel.INFO)
+//          val queryExecutionId = athenaClient
+//              .startQueryExecution(startQueryExecutionRequest).queryExecutionId()
+//          logger.log("Query execution ID: $queryExecutionId", LogLevel.INFO)
+          return getStatementResultResponse.records().toString()
     }
     return ""
   }
@@ -84,10 +78,11 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
         val statementRequest = ExecuteStatementRequest.builder()
             .clusterIdentifier("dpr-redshift-development")
             .database(database)
-            .secretArn(query)
+            .secretArn("arn:aws:secretsmanager:eu-west-2:771283872747:secret:dpr-redshift-secret-development-rLHcQZ")
             .sql(query)
             .build()
         val executionId = redshiftDataClient.executeStatement(statementRequest).id()
+        logger.log("Executed admin table statement and got ID: $executionId", LogLevel.DEBUG)
         val describeStatementRequest = DescribeStatementRequest.builder()
             .id(executionId)
             .build()
@@ -111,9 +106,9 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
         return redshiftDataClient.getStatementResult(getStatementResultRequest)
     }
 
-    private fun getData(columnName: String, rowNumber: Int, getStatementResultResponse: GetStatementResultResponse): Any? {
+    private fun getData(columnName: String, rowNumber: Int, getStatementResultResponse: GetStatementResultResponse): String {
         val columnNameToResultIndex = mutableMapOf<String, Int>()
         getStatementResultResponse.columnMetadata().forEachIndexed{ i, colMetaData -> columnNameToResultIndex[colMetaData.name()] = i}
-        return getStatementResultResponse.records()[0][columnNameToResultIndex[columnName]!!]
+        return getStatementResultResponse.records()[rowNumber][columnNameToResultIndex[columnName]!!].stringValue()
     }
 }
