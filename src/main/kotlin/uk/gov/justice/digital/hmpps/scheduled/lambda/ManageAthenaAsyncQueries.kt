@@ -35,7 +35,7 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
           queryRedshift(updateStateQuery, logger)
           if (currentState == "SUCCEEDED") {
               val nextQueryToRun = """
-                 SELECT t2.query, t2.database, t2.catalog, t2.datasource FROM
+                 SELECT t2.query, t2.database, t2.catalog, t2.datasource, t2.root_execution_id, t2.index FROM
                   (SELECT root_execution_id, query, index FROM datamart.admin.execution_manager WHERE current_execution_id = '$queryExecutionId') AS t1
                   JOIN
                   (SELECT root_execution_id, index, query, database, catalog, datasource  FROM datamart.admin.execution_manager) AS t2
@@ -43,6 +43,8 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
                   """
               logger.log("Running admin query", LogLevel.INFO)
               val getStatementResultResponse = queryRedshiftAndGetResult(nextQueryToRun, logger)
+              val rootExecutionId = getData("root_execution_id", 0, getStatementResultResponse)
+              val index = getIntData("index", 0, getStatementResultResponse)
               if (getStatementResultResponse.totalNumRows() == 1L) {
                   val query = getData("query", 0, getStatementResultResponse)
                   logger.log("Retrieved ${getStatementResultResponse.records()} results from admin table.", LogLevel.INFO)
@@ -50,6 +52,9 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
                   if (datasource == "redshift") {
                       val redshiftStmExecutionId = queryRedshift(query, logger)
                       logger.log("Redshift statement execution ID: $redshiftStmExecutionId", LogLevel.INFO)
+                      val updateStateQuery = "UPDATE datamart.admin.execution_manager SET current_state = 'SUCCEEDED', current_execution_id = '$redshiftStmExecutionId' WHERE root_execution_id = '$rootExecutionId' AND index = $index"
+                      logger.log("Update state Redshift query: $updateStateQuery", LogLevel.INFO)
+                      queryRedshift(updateStateQuery, logger)
                       return redshiftStmExecutionId
                   } else {
                       val database = getData("database", 0, getStatementResultResponse)
@@ -57,9 +62,12 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
                       val catalog = getData("catalog", 0, getStatementResultResponse)
                       logger.log("The catalog from the admin table is: $catalog", LogLevel.INFO)
                       val athenaExecutionId = queryAthena(query, database, catalog, logger)
+                      val updateStateQuery = "UPDATE datamart.admin.execution_manager SET current_execution_id = '$athenaExecutionId' WHERE root_execution_id = '$rootExecutionId' AND index = $index"
+                      queryRedshift(updateStateQuery, logger)
                       return athenaExecutionId
                   }
               }
+              logger.log("All queries succeeded. No further queries to run for rootExecutionId: $rootExecutionId.")
           } else if (currentState == "FAILED" || currentState == "CANCELLED") {
             val error = ((payload["detail"] as Map<String,Any>)["athenaError"] as Map<String,Any>)["errorMessage"] as String
             logger.log("Query with execution ID: $queryExecutionId failed. Error: $error",LogLevel.ERROR)
@@ -67,7 +75,7 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
             queryRedshift(updateStateQuery, logger)
           }
     }
-    return ""
+    return "Context was null."
   }
 
     private fun queryRedshift(query:String, logger: LambdaLogger): String {
@@ -122,6 +130,12 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
         return getStatementResultResponse.records()[rowNumber][columnNameToResultIndex[columnName]!!].stringValue()
     }
 
+    private fun getIntData(columnName: String, rowNumber: Int, getStatementResultResponse: GetStatementResultResponse): Int {
+        val columnNameToResultIndex = mutableMapOf<String, Int>()
+        getStatementResultResponse.columnMetadata().forEachIndexed{ i, colMetaData -> columnNameToResultIndex[colMetaData.name()] = i}
+        return getStatementResultResponse.records()[rowNumber][columnNameToResultIndex[columnName]!!].longValue().toInt()
+    }
+
     private fun queryAthena(query:String, database: String, catalog: String, logger: LambdaLogger): String {
         val athenaClient: AthenaClient = AthenaClient.builder()
                   .region(Region.EU_WEST_2)
@@ -151,7 +165,7 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
               .queryExecutionContext(queryExecutionContext)
               .workGroup("dpr-generic-athena-workgroup")
               .build()
-          logger.log("Full async query: $query", LogLevel.INFO)
+          logger.log("Full Athena async query: $query", LogLevel.INFO)
           val queryExecutionId = athenaClient
               .startQueryExecution(startQueryExecutionRequest).queryExecutionId()
           logger.log("Athena Query execution ID: $queryExecutionId", LogLevel.INFO)
