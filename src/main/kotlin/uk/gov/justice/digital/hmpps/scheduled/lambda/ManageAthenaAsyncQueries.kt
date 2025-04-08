@@ -46,7 +46,7 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
               if (getStatementResultResponse.totalNumRows() == 1L) {
                   val rootExecutionId = getData("root_execution_id", 0, getStatementResultResponse)
                   val index = getIntData("index", 0, getStatementResultResponse)
-                  val query = getData("query", 0, getStatementResultResponse)
+                  val query = getData("query", 0, getStatementResultResponse).replace("''", "'")
                   logger.log("Retrieved ${getStatementResultResponse.records()} results from admin table.", LogLevel.INFO)
                   val datasource = getData("datasource", 0, getStatementResultResponse)
                   if (datasource == "redshift") {
