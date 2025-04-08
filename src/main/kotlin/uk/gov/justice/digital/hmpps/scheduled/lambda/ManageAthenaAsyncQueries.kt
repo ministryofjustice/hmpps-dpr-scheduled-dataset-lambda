@@ -41,11 +41,11 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
                   (SELECT root_execution_id, index, query, database, catalog, datasource  FROM datamart.admin.execution_manager) AS t2
                  ON t1.root_execution_id = t2.root_execution_id AND t2.index = (t1.index + 1)
                   """
-              logger.log("Running admin query", LogLevel.INFO)
+              logger.log("Running admin query to find next query to run", LogLevel.INFO)
               val getStatementResultResponse = queryRedshiftAndGetResult(nextQueryToRun, logger)
-              val rootExecutionId = getData("root_execution_id", 0, getStatementResultResponse)
-              val index = getIntData("index", 0, getStatementResultResponse)
               if (getStatementResultResponse.totalNumRows() == 1L) {
+                  val rootExecutionId = getData("root_execution_id", 0, getStatementResultResponse)
+                  val index = getIntData("index", 0, getStatementResultResponse)
                   val query = getData("query", 0, getStatementResultResponse)
                   logger.log("Retrieved ${getStatementResultResponse.records()} results from admin table.", LogLevel.INFO)
                   val datasource = getData("datasource", 0, getStatementResultResponse)
@@ -67,7 +67,7 @@ class ManageAthenaAsyncQueries : RequestHandler<MutableMap<String, Any>, String>
                       return athenaExecutionId
                   }
               }
-              logger.log("All queries succeeded. No further queries to run for rootExecutionId: $rootExecutionId.")
+              logger.log("All queries succeeded. No further queries to run.")
           } else if (currentState == "FAILED" || currentState == "CANCELLED") {
             val error = ((payload["detail"] as Map<String,Any>)["athenaError"] as Map<String,Any>)["errorMessage"] as String
             logger.log("Query with execution ID: $queryExecutionId failed. Error: $error",LogLevel.ERROR)
