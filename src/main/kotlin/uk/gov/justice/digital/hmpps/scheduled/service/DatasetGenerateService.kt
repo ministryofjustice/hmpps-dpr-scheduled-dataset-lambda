@@ -18,7 +18,7 @@ data class RedshiftProperties(
   val redshiftDataApiClusterId: String,
   val redshiftDataApiDb: String,
   val redshiftDataApiSecretArn: String,
-  val s3location: String = "dpr-working-development/reports",
+  val s3location: String,
 )
 
 class DatasetGenerateService (
