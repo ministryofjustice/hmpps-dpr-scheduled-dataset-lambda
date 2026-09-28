@@ -28,7 +28,7 @@ class ReportScheduleService(
 
       //SCHEDULE
       val scheduledDataSet = extractDatasetsToBeScheduled(productDefinitions)
-      logger.log("following datasets due to be scheduled " + scheduledDataSet)
+          logger.log("following datasets due to be scheduled " + scheduledDataSet)
 
       //GENERATE data sets
       scheduledDataSet.map { scheduled ->

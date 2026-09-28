@@ -22,9 +22,10 @@ class DatasetGenerateLambda : RequestHandler<MutableMap<String, Any>, String> {
 
     val redshiftDataClient = RedshiftDataClient.builder().region(Region.EU_WEST_2).build()
     val redshiftProperties = RedshiftProperties(
-      redshiftDataApiClusterId = System.getenv("CLUSTER_ID"),
-      redshiftDataApiDb = System.getenv("DB_NAME"),
-      redshiftDataApiSecretArn = System.getenv("CREDENTIAL_SECRET_ARN"),
+        redshiftDataApiClusterId = System.getenv("CLUSTER_ID"),
+        redshiftDataApiDb = System.getenv("DB_NAME"),
+        redshiftDataApiSecretArn = System.getenv("CREDENTIAL_SECRET_ARN"),
+        s3location = System.getenv("S3_REPORT_LOCATION"),
     )
     val dynamoDbClient = DynamoDbClient.builder()
       .region(Region.EU_WEST_2).build()

@@ -16,7 +16,7 @@ class EventBridge(
   companion object {
     const val RULE_SOURCE = "uk.gov.justice.digital.hmpps.scheduled.lambda.ReportSchedulerLambda"
     const val RULE_DETAIL_TYPE_DATASET = "RedshiftDatasetGenerate"
-    const val EVENT_BUS_NAME = "dpr-event-bus"
+    const val EVENT_BUS_NAME = "dpr-event_bus"
   }
 
   fun sendDatasetEvent(event: DatasetGenerateEvent, logger: LambdaLogger) {
