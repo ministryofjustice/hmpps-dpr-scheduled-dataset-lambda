@@ -75,7 +75,10 @@ fun isNonStable(version: String): Boolean {
 }
 
 dependencyCheck {
-  nvd.apiKey = System.getenv("NVD_API_KEY") ?: ""
+  val nvdApiKey = System.getenv("NVD_API_KEY")
+  if (!nvdApiKey.isNullOrBlank()) {
+    nvd.apiKey = nvdApiKey
+  }
 }
 
 tasks {
