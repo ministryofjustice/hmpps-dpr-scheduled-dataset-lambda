@@ -5,7 +5,7 @@ plugins {
   id("jacoco")
   id("com.github.johnrengelman.shadow") version "8.1.1"
   id("org.barfuin.gradle.jacocolog") version "3.1.0"
-  id("org.owasp.dependencycheck")  version "8.2.1"
+  id("org.owasp.dependencycheck")  version "12.1.0"
 }
 
 configurations {
@@ -72,6 +72,10 @@ fun isNonStable(version: String): Boolean {
   val regex = "^[0-9,.v-]+(-r)?$".toRegex()
   val isStable = stableKeyword || regex.matches(version)
   return isStable.not()
+}
+
+dependencyCheck {
+  nvd.apiKey = System.getenv("NVD_API_KEY") ?: ""
 }
 
 tasks {
