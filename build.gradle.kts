@@ -80,6 +80,7 @@ dependencyCheck {
     nvd.apiKey = nvdApiKey
   }
   analyzers.centralEnabled = false
+  analyzers.ossIndexEnabled = false
 }
 
 tasks {
