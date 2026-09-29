@@ -79,6 +79,7 @@ dependencyCheck {
   if (!nvdApiKey.isNullOrBlank()) {
     nvd.apiKey = nvdApiKey
   }
+  analyzers.centralEnabled = false
 }
 
 tasks {
